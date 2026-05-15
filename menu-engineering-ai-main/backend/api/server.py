@@ -348,16 +348,17 @@ async def process_visual_creation(
             
         for res in ai_results:
             style_name = res.get("style")
-            local_filename = res.get("filename")
-            # The script provides the output_path relative to current dir
-            full_local_path = os.path.join(os.getcwd(), "localimages", local_filename)
+            local_filename = res.get("filename").replace(" ", "_")
+            # The script provides the output_path with original filename, we need to match it
+            original_local_filename = res.get("filename")
+            full_local_path = os.path.join(os.getcwd(), "localimages", original_local_filename)
             
             print(f"DEBUG: Uploading {style_name} from {full_local_path}")
             
             cloud_url = upload_image_to_supabase(full_local_path, f"generated/{local_filename}") or ""
             
             # FALLBACK: If cloud_url is empty, use the local path as a backup
-            final_url = cloud_url if cloud_url else f"http://127.0.0.1:8000/images/{local_filename}"
+            final_url = cloud_url if cloud_url else f"http://127.0.0.1:8000/images/{original_local_filename}"
             
             cloud_results_list.append({
                 "style": style_name,
