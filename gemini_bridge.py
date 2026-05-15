@@ -1,6 +1,8 @@
 import os
 import sys
 import json
+import requests
+from dotenv import load_dotenv
 import vertexai
 from vertexai.generative_models import GenerativeModel, GenerationConfig
 from google import genai
@@ -8,10 +10,30 @@ from google.genai import types
 from PIL import Image as PILImage
 import io
 
-def get_genai_client():
-    """Initializes the google-genai client using Vertex AI or API Key."""
+load_dotenv()
+
+def fetch_pexels_image(query):
+    api_key = os.getenv("PEXELS_API_KEY")
+    if not api_key:
+        return "https://images.pexels.com/photos/1640777/pexels-photo-1640777.jpeg" # Fallback
+    
+    headers = {"Authorization": api_key}
+    url = f"https://api.pexels.com/v1/search?query={query}&per_page=1"
     try:
-        service_account_path = os.path.join(os.getcwd(), 'service-account.json')
+        response = requests.get(url, headers=headers)
+        data = response.json()
+        if data.get("photos"):
+            return data["photos"][0]["src"]["large2x"]
+    except Exception as e:
+        print(f"Pexels Error: {e}", file=sys.stderr)
+    return "https://images.pexels.com/photos/1640777/pexels-photo-1640777.jpeg"
+
+def get_genai_client():
+    """Initializes the google-genai client using Service Account."""
+    try:
+        # Look for service-account.json in the script's directory
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        service_account_path = os.path.join(script_dir, 'service-account.json')
         if os.path.exists(service_account_path):
             os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = service_account_path
             with open(service_account_path, 'r') as f:
@@ -79,14 +101,15 @@ def enhance_image_prompt(image_path):
 def generate_composition(user_prompt):
     try:
         # 0. Initialize Vertex AI
-        service_account_path = os.path.join(os.getcwd(), 'service-account.json')
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        service_account_path = os.path.join(script_dir, 'service-account.json')
         os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = service_account_path
         with open(service_account_path, 'r') as f:
             service_account = json.load(f)
             project_id = service_account['project_id']
         
         vertexai.init(project=project_id, location='us-central1')
-        model = GenerativeModel("gemini-2.5-flash")
+        model = GenerativeModel("gemini-2.0-flash")
         
         # --- STAGE 1: SCRIPT WRITER ---
         script_prompt = f"""You are a professional video scriptwriter for cinematic advertising.
@@ -126,13 +149,12 @@ Return ONLY valid JSON with this schema:
         storyboard = json.loads(storyboard_response.text)
 
         # --- STAGE 3: THE CINEMATIC SCOUT ---
-        for scene in storyboard['scenes']:
-            query_prompt = f"""Generate a 4-word Pexels search query for this scene: {scene['scene_description']}.
-            CONTEXT: {user_prompt}
-            RULE: You MUST include at least one core noun from the CONTEXT (e.g. if context is 'Seafood', include 'seafood' or 'lobster'). 
-            Output ONLY the 4 words."""
+        for i, scene in enumerate(storyboard['scenes']):
+            query_prompt = f"""Generate a high-end 3-word Pexels search query for a culinary stock photo representing: {scene['scene_description']}.
+            Focus on the dish: {user_prompt}. 
+            Output ONLY the query."""
             query_response = model.generate_content(query_prompt)
-            scene['image_query'] = query_response.text.strip().replace('"', '')
+            scene['image_query'] = query_response.text.strip().replace('"', '').replace('Query:', '').strip()
 
         # --- STAGE 4: 10XFRAME INDUSTRIAL ARCHITECT (HyperFrames Certified) ---
         architect_prompt = f"""You are a 10xFrame video code architect.
@@ -142,12 +164,12 @@ Return ONLY valid JSON with this schema:
         {json.dumps(storyboard)}
 
         HYPERFRAMES RULES (MANDATORY):
-        1. Root: <div id="stage" data-composition-id="10x-video" style="background:#000; width:100%; height:100%;">
-        2. Isolation: EVERY scene (including the Outro) MUST be a <div class="scene-container" data-start="S" data-duration="D" style="opacity:0; position:absolute; inset:0; width:100%; height:100%;">.
-        3. Assets: EVERY scene container MUST have <img class="clip" src="PLACEHOLDER_IMAGE_N" style="width:100%; height:100%; object-fit:cover; position:absolute;" />.
+        1. Root: <div id="stage" style="background:#000; width:100%; height:100%; position:relative; overflow:hidden;">
+        2. Isolation: EVERY scene MUST be a <div id="scene_{{i}}" class="scene-container" style="opacity:0; position:absolute; inset:0; width:100%; height:100%; z-index:{{i+1}};">.
+        3. Assets: EVERY scene container MUST have <img class="clip" src="PLACEHOLDER_IMAGE_{{i}}" style="width:100%; height:100%; object-fit:cover; position:absolute;" />.
         4. Layout: 
-           - Headline: <h1 class="video-headline" style="position:absolute; top:35%; width:100%; text-align:center; font-size:80px; z-index:10;">TEXT</h1>
-           - Subtext: <p class="video-subtext" style="position:absolute; top:50%; width:100%; text-align:center; font-size:30px; z-index:10;">TEXT</p>
+           - Headline: <h1 class="video-headline" style="position:absolute; top:35%; width:100%; text-align:center; font-size:85px; z-index:20; margin:0; padding:0 60px; box-sizing:border-box;">TEXT</h1>
+           - Subtext: <p class="video-subtext" style="position:absolute; top:52%; width:100%; text-align:center; font-size:32px; z-index:20; margin:0;">TEXT</p>
         5. GSAP (STRICT):
            - FIRST LINE: window.__timelines = {{ "10x-video": gsap.timeline({{ paused: true }}) }};
            - SECOND LINE: gsap.set(".scene-container", {{ opacity: 0 }});
@@ -165,6 +187,12 @@ Return ONLY valid JSON with this schema:
             final_html = final_html.split("```html")[1].split("```")[0].strip()
         elif "```" in final_html:
             final_html = final_html.split("```")[1].split("```")[0].strip()
+
+        # --- STAGE 5: ASSET CURATOR ---
+        for i, scene in enumerate(storyboard['scenes']):
+            real_url = fetch_pexels_image(scene['image_query'])
+            placeholder = f"PLACEHOLDER_IMAGE_{i}"
+            final_html = final_html.replace(placeholder, real_url)
 
         return json.dumps({
             "title": "Cinematic Masterpiece",

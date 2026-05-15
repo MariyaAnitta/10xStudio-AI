@@ -1,0 +1,12 @@
+fastapi
+uvicorn
+google-generativeai
+google-genai
+google-auth
+google-cloud-firestore
+supabase
+python-dotenv
+pandas
+openpyxl
+python-multipart
+pillow

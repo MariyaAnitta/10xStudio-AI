@@ -1,20 +1,62 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
+# 10xStudio.AI - Menu Engineering & Visual Intelligence Suite
 
-# Run and deploy your AI Studio app
+A professional, production-grade platform designed to revolutionize restaurant profitability through AI-driven menu engineering and cinematic visual creation.
 
-This contains everything you need to run your app locally.
+## 🚀 Overview
 
-View your app in AI Studio: https://ai.studio/apps/01d6be2c-73de-474f-afe8-86059353bfc2
+10xStudio.AI bridges the gap between business metrics and culinary aesthetics. It analyzes menu performance (Profit vs. Popularity) and automatically enhances or generates high-end food photography to drive revenue for "Profit Hero" dishes.
 
-## Run Locally
+## 📁 Project Structure
 
-**Prerequisites:**  Node.js
+The project uses a **Multi-Layer Hybrid Architecture**:
 
+*   **`/menu-engineering-ai-main/frontend`**: (Next.js) A modern React dashboard providing visual insights, audit results, and a menu engineering interface.
+*   **`/menu-engineering-ai-main/backend`**: (FastAPI) The orchestration layer handling Excel processing, Firestore synchronization, and AI pipeline management.
+*   **Root Directory Python Scripts**: The "Intelligence Engine" containing core logic for:
+    *   `visual_intelligence.py`: Audits food photos against business performance.
+    *   `visual_processor_nano.py`: Generates professional variations of dish images.
+    *   `gemini_bridge.py`: Orchestrates cinematic video generation.
+    *   `video_renderer.py`: Handles high-fidelity MP4 exports.
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+## 🛠️ Tech Stack
+
+*   **Frontend**: Next.js (App Router), TypeScript, Tailwind CSS, Lucide.
+*   **Backend**: Python 3.10+, FastAPI, Pandas, Subprocess.
+*   **AI Engine**: Google Gemini 1.5 Flash, Vertex AI Imagen 3.
+*   **Database & Storage**: 
+    *   **Firestore**: Metadata persistence (Analyses, Audits, Selections).
+    *   **Supabase / GCS**: Scalable object storage for high-resolution culinary imagery.
+
+## ⚙️ Installation & Setup
+
+### 1. Prerequisites
+*   Node.js (v18+)
+*   Python 3.10+
+*   Google Cloud Project with Vertex AI enabled.
+
+### 2. Environment Variables
+Create a `.env` file in the root and backend folders based on the provided `.env.example`. 
+
+**Critical keys needed:**
+*   `GOOGLE_APPLICATION_CREDENTIALS` (Path to your service account JSON)
+*   `SUPABASE_URL` & `SUPABASE_KEY` (If using Supabase storage)
+
+### 3. Backend Setup
+```bash
+cd menu-engineering-ai-main/backend
+pip install -r requirements.txt
+python api/server.py
+```
+
+### 4. Frontend Setup
+```bash
+cd menu-engineering-ai-main/frontend
+npm install
+npm run dev
+```
+
+## 🔒 Security Note
+The `service-account.json` and `.env` files are excluded from this repository via `.gitignore`. Please ensure these are shared securely with the team.
+
+---
+**Developed by 10xStudio Team**

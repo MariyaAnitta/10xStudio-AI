@@ -11,14 +11,16 @@ import io
 def get_client():
     """Initializes the google-genai client using Service Account."""
     try:
-        service_account_path = os.path.join(os.getcwd(), 'service-account.json')
+        # Look for service-account.json in the script's directory
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        service_account_path = os.path.join(script_dir, 'service-account.json')
         if os.path.exists(service_account_path):
             os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = service_account_path
             with open(service_account_path, 'r') as f:
                 service_account = json.load(f)
                 project_id = service_account['project_id']
             # Use v1 as the model is already stable in us-east1
-            return genai.Client(vertexai=True, project=project_id, location='us-east1', http_options={'api_version': 'v1'})
+            return genai.Client(vertexai=True, project=project_id, location='us-central1', http_options={'api_version': 'v1'})
         else:
             api_key = os.getenv("GOOGLE_API_KEY")
             if api_key:

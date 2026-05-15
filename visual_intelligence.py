@@ -7,13 +7,14 @@ from google.genai import types
 def get_client():
     """Initializes the google-genai client."""
     try:
-        service_account_path = os.path.join(os.getcwd(), 'service-account.json')
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        service_account_path = os.path.join(script_dir, 'service-account.json')
         if os.path.exists(service_account_path):
             os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = service_account_path
             with open(service_account_path, 'r') as f:
                 service_account = json.load(f)
                 project_id = service_account['project_id']
-            return genai.Client(vertexai=True, project=project_id, location='us-east1', http_options={'api_version': 'v1'})
+            return genai.Client(vertexai=True, project=project_id, location='us-central1', http_options={'api_version': 'v1'})
         else:
             api_key = os.getenv("GOOGLE_API_KEY")
             if api_key:
@@ -138,11 +139,11 @@ if __name__ == "__main__":
         analyze_visual_intelligence(
             sys.argv[1], 
             sys.argv[2],
-            int(sys.argv[3]), 
+            float(sys.argv[3]), 
             float(sys.argv[4]), 
-            int(sys.argv[5]), 
+            float(sys.argv[5]), 
             sys.argv[6], 
             float(sys.argv[7]),
-            int(sys.argv[8]),
-            int(sys.argv[9])
+            float(sys.argv[8]),
+            float(sys.argv[9])
         )

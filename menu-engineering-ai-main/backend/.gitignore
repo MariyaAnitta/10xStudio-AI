@@ -1,0 +1,8 @@
+.env
+service-account.json
+vertex*.json
+
+# Temp Files
+temp_*.xlsx
+~$*.xlsx
+test_*.py

@@ -7,4 +7,10 @@ coverage/
 .env*
 !.env.example
 service-account.json
-menu-engineering-ai-main/
+
+# Local Assets & Cache
+**/localimages/
+**/localvideos/
+**/temp_render/
+**/__pycache__/
+.next/
