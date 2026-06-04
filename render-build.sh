@@ -1,19 +1,18 @@
 #!/usr/bin/env bash
-# exit on error
+# This script is the Render BUILD COMMAND (set it in Render dashboard)
+# It installs Python deps, then builds the frontend.
+# Render already runs 'npm install' before this, so we do NOT call it here.
 set -o errexit
 
-echo "Setting up Python environment..."
-# Install pip if not present, though Render Node envs usually have it.
-# We use a virtual environment to avoid PEP-668 "externally managed environment" errors.
+echo "==> Setting up Python virtual environment..."
 python3 -m venv venv
 source venv/bin/activate
 
-echo "Installing Python dependencies..."
-pip install --upgrade pip
-pip install google-genai pillow vertexai firebase-admin
+echo "==> Installing Python dependencies..."
+pip install --upgrade pip --quiet
+pip install google-genai pillow vertexai firebase-admin --quiet
 
-echo "Installing Node dependencies..."
-npm install
-
-echo "Building frontend..."
+echo "==> Building frontend with Vite..."
 npm run build
+
+echo "==> Build complete!"

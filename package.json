@@ -8,7 +8,7 @@
     "api": "tsx server.ts",
     "start": "tsx server.ts",
     "build": "vite build",
-    "postinstall": "node -e \"if(process.platform!=='win32'){require('child_process').execSync('./render-build.sh',{stdio:'inherit'})}else{require('child_process').execSync('npm run build',{stdio:'inherit'})}\"",
+    "postinstall": "npm run build",
     "preview": "vite preview",
     "clean": "rm -rf dist",
     "lint": "tsc --noEmit"
