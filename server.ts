@@ -11,7 +11,7 @@ import { saveToFirestore, uploadToFirebaseStorage, getStorageAndDbStatus, getSes
 dotenv.config();
 
 const app = express();
-const port = process.env.PORT || 3005;
+const port = process.env.PORT ? parseInt(process.env.PORT, 10) : 3005;
 
 // Configure Multer for local uploads
 const uploadDir = path.join(process.cwd(), 'public', 'uploads');
