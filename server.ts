@@ -216,7 +216,7 @@ app.post('/api/visual-automation', upload.single('image'), (req, res) => {
           // Fallback to local URL if GCS fails
           urls.push({ 
             style: item.style, 
-            url: `http://localhost:${port}/assets/processed/${item.filename}` 
+            url: `${req.protocol}://${req.get('host')}/assets/processed/${item.filename}`  
           });
         }
       }
@@ -582,8 +582,8 @@ app.post('/api/generate-campaign', upload.single('image'), (req, res) => {
           
           uploadedImages.push({
             ...img,
-            url: `http://localhost:${port}/assets/processed/${filename}`,
-            publicUrl: publicUrl || `http://localhost:${port}/assets/processed/${filename}`
+            url: `${req.protocol}://${req.get('host')}/assets/processed/${filename}`,
+            publicUrl: publicUrl || `${req.protocol}://${req.get('host')}/assets/processed/${filename}`
           });
         }
         result.images = uploadedImages;
