@@ -45,6 +45,7 @@ const FALLBACK_IMAGES = [
 app.use(cors());
 app.use(express.json());
 app.use('/assets', express.static(path.join(process.cwd(), 'public', 'assets')));
+app.use('/uploads', express.static(path.join(process.cwd(), 'public', 'uploads')));
 app.use('/videos', express.static(path.join(process.cwd(), 'localvideos')));
 
 // Serve built React files
