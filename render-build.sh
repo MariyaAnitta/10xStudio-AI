@@ -17,4 +17,7 @@ pip install google-genai pillow vertexai firebase-admin --quiet
 echo "==> Building frontend with Vite..."
 npx vite build
 
+echo "==> Building backend with esbuild..."
+npx esbuild server.ts --bundle --platform=node --format=esm --packages=external --outfile=server.js
+
 echo "==> Build complete!"
