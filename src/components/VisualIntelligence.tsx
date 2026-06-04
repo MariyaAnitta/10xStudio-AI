@@ -158,7 +158,7 @@ export default function VisualIntelligence() {
     formData.append('image', file);
 
     try {
-      const response = await fetch('http://localhost:3005/api/visual-intelligence', {
+      const response = await fetch('/api/visual-intelligence', {
         method: 'POST',
         body: formData,
       });
@@ -193,7 +193,7 @@ export default function VisualIntelligence() {
     formData.append('audit_results', JSON.stringify(data));
 
     try {
-      const response = await fetch('http://localhost:3005/api/save-intelligence', {
+      const response = await fetch('/api/save-intelligence', {
         method: 'POST',
         body: formData,
       });
@@ -296,7 +296,7 @@ export default function VisualIntelligence() {
                   }
 
                   try {
-                    const res = await fetch('http://localhost:3005/api/visual-intelligence', { method: 'POST', body: formData });
+                    const res = await fetch('/api/visual-intelligence', { method: 'POST', body: formData });
                     const result = await res.json();
                     if (result.success) setData(result);
                     else alert('Error: ' + result.error);

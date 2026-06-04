@@ -64,7 +64,7 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
   const loadSessionFromCloud = async (email: string) => {
     setIsSessionLoading(true);
     try {
-      const res = await fetch(`http://localhost:3005/api/get-session?email=${encodeURIComponent(email)}`);
+      const res = await fetch(`/api/get-session?email=${encodeURIComponent(email)}`);
       if (res.ok) {
         const data = await res.json();
         if (data.success && data.session) {
@@ -91,7 +91,7 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
     if (!targetEmail) return;
 
     try {
-      await fetch('http://localhost:3005/api/save-session', {
+      await fetch('/api/save-session', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

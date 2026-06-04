@@ -11,7 +11,7 @@ import { saveToFirestore, uploadToFirebaseStorage, getStorageAndDbStatus, getSes
 dotenv.config();
 
 const app = express();
-const port = 3005;
+const port = process.env.PORT || 3005;
 
 // Configure Multer for local uploads
 const uploadDir = path.join(process.cwd(), 'public', 'uploads');
@@ -46,6 +46,10 @@ app.use(cors());
 app.use(express.json());
 app.use('/assets', express.static(path.join(process.cwd(), 'public', 'assets')));
 app.use('/videos', express.static(path.join(process.cwd(), 'localvideos')));
+
+// Serve built React files
+const clientDist = path.join(process.cwd(), 'dist');
+app.use(express.static(clientDist));
 
 app.use((req, res, next) => {
   const start = Date.now();
@@ -665,6 +669,11 @@ app.get('/api/higgsfield/status', async (req, res) => {
   }
 });
 
+// Fallback for React Router (must be AFTER all API routes)
+app.get('*', (req, res) => {
+  res.sendFile(path.join(clientDist, 'index.html'));
+});
+
 app.listen(port, '0.0.0.0', () => {
-  console.log(`10xStudio API (Python Bridged) running at http://localhost:${port}`);
+  console.log(`10xStudio API (Python Bridged) running at http://0.0.0.0:${port}`);
 });

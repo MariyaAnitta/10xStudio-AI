@@ -242,7 +242,7 @@ export default function MenuStudio() {
         formData.append('image', uploadedFile);
       }
 
-      const response = await fetch('http://localhost:3005/api/generate-menu', {
+      const response = await fetch('/api/generate-menu', {
         method: 'POST',
         body: formData,
       });

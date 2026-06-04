@@ -56,7 +56,7 @@ export default function VisualAutomation() {
     formData.append('image', file);
 
     try {
-      const response = await fetch('http://localhost:3005/api/visual-automation', {
+      const response = await fetch('/api/visual-automation', {
         method: 'POST',
         body: formData,
       });

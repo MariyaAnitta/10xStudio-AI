@@ -27,7 +27,7 @@ export default function DBInspectorPage() {
   const fetchStatus = async () => {
     setLoading(true);
     try {
-      const res = await fetch('http://localhost:3005/api/verify-storage-db');
+      const res = await fetch('/api/verify-storage-db');
       if (res.ok) {
         const data = await res.json();
         setStatus(data);

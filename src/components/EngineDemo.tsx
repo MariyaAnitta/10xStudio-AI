@@ -63,7 +63,7 @@ export default function StudioEngine() {
     setIsExporting(true);
 
     try {
-      const response = await fetch('http://localhost:3005/api/export-mp4', {
+      const response = await fetch('/api/export-mp4', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'

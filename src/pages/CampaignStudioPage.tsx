@@ -193,7 +193,7 @@ export default function CampaignStudioPage() {
         formData.append('image', imageFile);
       }
 
-      const response = await fetch('http://localhost:3005/api/generate-campaign', {
+      const response = await fetch('/api/generate-campaign', {
         method: 'POST',
         body: formData,
       });
@@ -246,7 +246,7 @@ export default function CampaignStudioPage() {
         formData.append('image', imageFile);
       }
 
-      const response = await fetch('http://localhost:3005/api/generate-campaign', {
+      const response = await fetch('/api/generate-campaign', {
         method: 'POST',
         body: formData,
       });
@@ -289,7 +289,7 @@ export default function CampaignStudioPage() {
         formData.append('price', price);
       }
 
-      const response = await fetch('http://localhost:3005/api/generate-campaign', {
+      const response = await fetch('/api/generate-campaign', {
         method: 'POST',
         body: formData,
       });

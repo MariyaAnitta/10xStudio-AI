@@ -7,7 +7,7 @@ export interface VideoComposition {
 }
 
 export async function generateVideoComposition(prompt: string): Promise<VideoComposition> {
-  const response = await fetch('http://localhost:3005/api/generate-composition', {
+  const response = await fetch('/api/generate-composition', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
