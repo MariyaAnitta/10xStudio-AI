@@ -590,8 +590,8 @@ app.post('/api/generate-campaign', upload.single('image'), (req, res) => {
           
           uploadedImages.push({
             ...img,
-            url: `${req.protocol}://${req.get('host')}/assets/processed/${filename}`,
-            publicUrl: publicUrl || `${req.protocol}://${req.get('host')}/assets/processed/${filename}`
+            url: `/assets/processed/${filename}`,
+            publicUrl: publicUrl || `/assets/processed/${filename}`
           });
         }
         result.images = uploadedImages;

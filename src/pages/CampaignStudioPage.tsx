@@ -350,8 +350,85 @@ export default function CampaignStudioPage() {
       await handleDownload(fbEventRef, `${dishName}_FB_Event_1200x628.png`);
       await new Promise(r => setTimeout(r, 200));
     }
-    if (activeTab === 'All formats' || activeTab === 'IG Post') {
+    if (activeTab === 'All formats' || activeTab === 'Reel Thumb') {
       await handleDownload(reelThumbRef, `${dishName}_Reel_Thumb_1080x1920.png`);
+    }
+  };
+
+  const togglePlatform = (id: string) => {
+    setPlatformsState(prev => prev.map(p => p.id === id ? { ...p, checked: !p.checked } : p));
+  };
+
+  const captureActivePoster = async (): Promise<Blob | null> => {
+    if (!igPostRef.current) return null;
+    try {
+      const dataUrl = await htmlToImage.toPng(igPostRef.current, { quality: 1, pixelRatio: 2.0 });
+      const res = await fetch(dataUrl);
+      return await res.blob();
+    } catch (e) {
+      console.error('Failed to capture poster:', e);
+      return null;
+    }
+  };
+
+  const handleScheduleCampaign = async () => {
+    setIsScheduling(true);
+    try {
+      const blob = await captureActivePoster();
+      if (!blob) throw new Error('Could not capture image for schedule');
+      
+      const formData = new FormData();
+      formData.append('image', blob, 'schedule_creative.png');
+      formData.append('caption', caption || '');
+      formData.append('dishName', dishName);
+      
+      const res = await fetch('/api/schedule-campaign', {
+        method: 'POST',
+        body: formData
+      });
+      const data = await res.json();
+      if (data.success) {
+        alert('Campaign successfully scheduled into Calendar Queues!');
+      } else {
+        alert('Scheduling failed: ' + (data.error || 'Server error'));
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Error scheduling campaign');
+    } finally {
+      setIsScheduling(false);
+    }
+  };
+
+  const handlePublishNow = async () => {
+    setIsPublishing(true);
+    try {
+      const blob = await captureActivePoster();
+      if (!blob) throw new Error('Could not capture image for publishing');
+      
+      const formData = new FormData();
+      formData.append('image', blob, 'publish_creative.png');
+      formData.append('caption', caption || '');
+      formData.append('dishName', dishName);
+      
+      const selected = platformsState.filter(p => p.checked).map(p => p.id);
+      formData.append('platforms', JSON.stringify(selected));
+
+      const res = await fetch('/api/publish-now', {
+        method: 'POST',
+        body: formData
+      });
+      const data = await res.json();
+      if (data.success) {
+        alert('Campaign successfully published to: ' + selected.join(', '));
+      } else {
+        alert('Publishing failed: ' + (data.error || 'Server error'));
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Error publishing campaign');
+    } finally {
+      setIsPublishing(false);
     }
   };
 
