@@ -35,7 +35,7 @@ const CAMPAIGN_TYPES = [
   'Flash sale', 'Seasonal', 'New launch'
 ];
 
-const PLATFORMS = [
+const INITIAL_PLATFORMS = [
   { id: 'ig', name: 'Instagram', desc: 'Post + Story · auto-sized', time: 'Today 12:00 PM', checked: true },
   { id: 'wa', name: 'WhatsApp Business', desc: 'Banner · broadcast list', time: 'Today 1:00 PM', checked: true },
   { id: 'fb', name: 'Facebook', desc: 'Post · page feed', time: 'Today 2:00 PM', checked: false },
@@ -89,6 +89,11 @@ export default function CampaignStudioPage() {
   const [generatedImages, setGeneratedImages] = useState<any[]>([]);
   const [activeTab, setActiveTab] = useState('All formats');
   const [copySuccess, setCopySuccess] = useState(false);
+  
+  // Publishing states
+  const [platformsState, setPlatformsState] = useState(INITIAL_PLATFORMS);
+  const [isPublishing, setIsPublishing] = useState(false);
+  const [isScheduling, setIsScheduling] = useState(false);
   
   const igPostRef = useRef<HTMLDivElement>(null);
   const igStoryRef = useRef<HTMLDivElement>(null);
@@ -1133,10 +1138,10 @@ export default function CampaignStudioPage() {
             <h3 className="text-xs font-extrabold text-slate-400 uppercase tracking-widest">Schedule & Launch</h3>
             
             <div className="space-y-4">
-              {PLATFORMS.map(platform => (
-                <div key={platform.id} className="flex items-center justify-between py-2 border-b border-slate-100 last:border-0">
+              {platformsState.map(platform => (
+                <div key={platform.id} className="flex items-center justify-between py-2 border-b border-slate-100 last:border-0 cursor-pointer" onClick={() => togglePlatform(platform.id)}>
                   <div className="flex items-center gap-3">
-                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center shadow-inner ${platform.checked ? 'bg-red-50' : 'bg-slate-50'}`}>
+                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center shadow-inner transition-colors ${platform.checked ? 'bg-red-50' : 'bg-slate-50'}`}>
                       <Share2 size={15} className={platform.checked ? 'text-red-600' : 'text-slate-400'} />
                     </div>
                     <div>
@@ -1146,22 +1151,27 @@ export default function CampaignStudioPage() {
                   </div>
                   <div className="flex items-center gap-3">
                     <span className="text-[10px] text-slate-500 font-bold">{platform.time}</span>
-                    <input type="checkbox" defaultChecked={platform.checked} className="w-3.5 h-3.5 rounded text-red-600 border-slate-300 focus:ring-red-500" />
+                    <input type="checkbox" checked={platform.checked} onChange={() => togglePlatform(platform.id)} className="w-3.5 h-3.5 rounded text-red-600 border-slate-300 focus:ring-red-500 pointer-events-none" />
                   </div>
                 </div>
               ))}
             </div>
 
             <div className="flex gap-4 pt-4 border-t border-slate-100">
-              <button className="flex-1 py-3.5 border border-slate-200 rounded-xl text-xs font-bold text-slate-700 hover:bg-slate-50 flex items-center justify-center gap-2">
-                <Calendar size={14} />
+              <button 
+                onClick={handleScheduleCampaign}
+                disabled={isScheduling || isPublishing}
+                className="flex-1 py-3.5 border border-slate-200 rounded-xl text-xs font-bold text-slate-700 hover:bg-slate-50 flex items-center justify-center gap-2"
+              >
+                {isScheduling ? <div className="w-3.5 h-3.5 border-2 border-slate-300 border-t-slate-600 rounded-full animate-spin"></div> : <Calendar size={14} />}
                 <span>Calendar Queues</span>
               </button>
               <button 
-                onClick={() => alert('Campaign has been successfully queued into your Social Scheduler!')}
+                onClick={handlePublishNow}
+                disabled={isPublishing || isScheduling}
                 className="flex-1 py-3.5 bg-red-600 hover:bg-red-700 text-white text-xs font-black rounded-xl flex items-center justify-center gap-2 shadow-lg shadow-red-600/20"
               >
-                <Megaphone size={14} />
+                {isPublishing ? <div className="w-3.5 h-3.5 border-2 border-red-400 border-t-white rounded-full animate-spin"></div> : <Megaphone size={14} />}
                 <span>Publish Now</span>
               </button>
             </div>

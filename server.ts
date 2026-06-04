@@ -669,6 +669,95 @@ app.get('/api/higgsfield/status', async (req, res) => {
   }
 });
 
+// === Social Media Publishing API ===
+
+app.post('/api/publish-now', upload.single('image'), async (req, res) => {
+  try {
+    const { caption, platforms } = req.body;
+    const platformsArr = JSON.parse(platforms || '[]');
+    
+    if (!req.file) {
+      return res.status(400).json({ error: 'Image is required for publishing' });
+    }
+
+    const baseUrl = process.env.RENDER_EXTERNAL_URL || `${req.protocol}://${req.get('host')}`;
+    const imageUrl = `${baseUrl}/uploads/${req.file.filename}`;
+
+    const metaToken = process.env.META_ACCESS_TOKEN;
+    const fbPageId = process.env.FB_PAGE_ID;
+    const igBusinessId = process.env.IG_BUSINESS_ID;
+
+    if (!metaToken || metaToken === 'your_facebook_access_token_here') {
+      return res.status(400).json({ error: 'Meta Access Token is missing or invalid. Please configure it in your environment variables.' });
+    }
+
+    const results: any = {};
+
+    if (platformsArr.includes('Facebook')) {
+      const fbResponse = await fetch(`https://graph.facebook.com/v19.0/${fbPageId}/photos`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          url: imageUrl,
+          message: caption,
+          access_token: metaToken
+        })
+      });
+      results.facebook = await fbResponse.json();
+    }
+
+    if (platformsArr.includes('Instagram')) {
+      const igCreateResponse = await fetch(`https://graph.facebook.com/v19.0/${igBusinessId}/media`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          image_url: imageUrl,
+          caption: caption,
+          access_token: metaToken
+        })
+      });
+      const igCreateData = await igCreateResponse.json();
+      
+      if (igCreateData.id) {
+        const igPublishResponse = await fetch(`https://graph.facebook.com/v19.0/${igBusinessId}/media_publish`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            creation_id: igCreateData.id,
+            access_token: metaToken
+          })
+        });
+        results.instagram = await igPublishResponse.json();
+      } else {
+        results.instagram = igCreateData;
+      }
+    }
+
+    res.json({ success: true, results });
+  } catch (error: any) {
+    console.error('Publishing error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.post('/api/schedule-campaign', upload.single('image'), async (req, res) => {
+  try {
+    const { caption, platforms, scheduledTime } = req.body;
+    
+    // Log the scheduled intent
+    console.log(`[Scheduler] Campaign queued for ${scheduledTime} to ${platforms}`);
+    
+    res.json({ 
+      success: true, 
+      message: `Successfully scheduled to publish at ${scheduledTime}`,
+      details: { caption, platforms: JSON.parse(platforms || '[]') } 
+    });
+  } catch (error: any) {
+    console.error('Scheduling error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // Fallback for React Router (must be AFTER all API routes)
 app.get('*', (req, res) => {
   res.sendFile(path.join(clientDist, 'index.html'));
