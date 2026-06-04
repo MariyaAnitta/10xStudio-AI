@@ -101,6 +101,9 @@ export default function CampaignStudioPage() {
   const fbEventRef = useRef<HTMLDivElement>(null);
   const reelThumbRef = useRef<HTMLDivElement>(null);
 
+  const [capturedPosterBlob, setCapturedPosterBlob] = useState<Blob | null>(null);
+  const [isPreparingToPublish, setIsPreparingToPublish] = useState(false);
+
   // Sync workspace brand kit
   useEffect(() => {
     if (workspaceBrandKit) {
@@ -368,6 +371,7 @@ export default function CampaignStudioPage() {
   };
 
   const captureActivePoster = async (): Promise<Blob | null> => {
+    if (capturedPosterBlob) return capturedPosterBlob;
     if (!igPostRef.current) return null;
     try {
       const dataUrl = await htmlToImage.toPng(igPostRef.current, { quality: 1, pixelRatio: 2.0 });
@@ -377,6 +381,21 @@ export default function CampaignStudioPage() {
       console.error('Failed to capture poster:', e);
       return null;
     }
+  };
+
+  const handleContinueToStep4 = async () => {
+    setIsPreparingToPublish(true);
+    if (igPostRef.current) {
+      try {
+        const dataUrl = await htmlToImage.toPng(igPostRef.current, { quality: 1, pixelRatio: 2.0 });
+        const res = await fetch(dataUrl);
+        setCapturedPosterBlob(await res.blob());
+      } catch (e) {
+        console.error('Failed to pre-capture poster:', e);
+      }
+    }
+    setIsPreparingToPublish(false);
+    setActiveStep(4);
   };
 
   const handleScheduleCampaign = async () => {
@@ -1125,11 +1144,18 @@ export default function CampaignStudioPage() {
               </button>
 
               <button 
-                onClick={() => setActiveStep(4)}
+                onClick={handleContinueToStep4}
+                disabled={isPreparingToPublish}
                 className="flex-1 py-3 bg-slate-900 hover:bg-black text-white font-bold rounded-xl text-xs flex items-center justify-center gap-2 shadow-md"
               >
-                <span>Continue to Caption & Calendar</span>
-                <ArrowRight size={14} />
+                {isPreparingToPublish ? (
+                  <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                ) : (
+                  <>
+                    <span>Continue to Caption & Calendar</span>
+                    <ArrowRight size={14} />
+                  </>
+                )}
               </button>
             </div>
 
@@ -1281,7 +1307,7 @@ export default function CampaignStudioPage() {
                 className="flex-1 py-3.5 border border-slate-200 rounded-xl text-xs font-bold text-slate-700 hover:bg-slate-50 flex items-center justify-center gap-2"
               >
                 {isScheduling ? <div className="w-3.5 h-3.5 border-2 border-slate-300 border-t-slate-600 rounded-full animate-spin"></div> : <Calendar size={14} />}
-                <span>Calendar Queues</span>
+                <span>Schedule Selected</span>
               </button>
               <button 
                 onClick={handlePublishNow}
