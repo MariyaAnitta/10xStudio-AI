@@ -598,7 +598,7 @@ export default function CampaignStudioPage() {
               {brandKit.restaurantName}
             </div>
             <div className="w-10 h-10 rounded-full flex flex-col items-center justify-center font-black shadow-2xl transform rotate-6 border-2 border-white/20" style={{ backgroundColor: accentThemeColor, color: '#000' }}>
-              <span className="text-[10px] leading-none">NEW</span>
+              <span className="text-[10px] leading-none">{selectedCampaign === 'New launch' ? 'NEW' : 'PROMO'}</span>
             </div>
           </div>
           
@@ -1103,14 +1103,22 @@ export default function CampaignStudioPage() {
 
               {/* Dynamic premium hashtags */}
               <div className="flex flex-wrap gap-2 pt-2">
-                {(hashtags.length > 0 ? hashtags : ['#SpiceGarden', '#GourmetBurger', '#FlashSaleSpecial', '#LimitedTimePromo', '#IndulgenceReady', '#FoodieFeast']).map((tag, idx) => (
-                  <span 
-                    key={idx} 
-                    className="px-2.5 py-1 bg-red-50 text-red-600 rounded-md text-[10px] font-bold border border-red-100 transition-all hover:bg-red-100"
-                  >
-                    {tag}
-                  </span>
-                ))}
+                {(() => {
+                  const displayHashtags = Array.isArray(hashtags) && hashtags.length > 0 
+                    ? hashtags 
+                    : typeof hashtags === 'string' 
+                      ? (hashtags as string).split(/[ ,]+/).map(t => t.startsWith('#') ? t : '#'+t).filter(t => t.length > 1)
+                      : ['#SpiceGarden', '#GourmetBurger', '#FlashSaleSpecial', '#LimitedTimePromo', '#IndulgenceReady', '#FoodieFeast'];
+                  
+                  return displayHashtags.map((tag, idx) => (
+                    <span 
+                      key={idx} 
+                      className="px-2.5 py-1 bg-red-50 text-red-600 rounded-md text-[10px] font-bold border border-red-100 transition-all hover:bg-red-100"
+                    >
+                      {tag}
+                    </span>
+                  ));
+                })()}
               </div>
 
               <div className="flex gap-3 pt-4 border-t border-slate-100">
