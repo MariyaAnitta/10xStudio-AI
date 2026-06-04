@@ -1,0 +1,6 @@
+{
+  "name": "10xStudio.AI",
+  "description": "AI-Powered Content & Video Digital Workforce. Transform ideas into high-quality videos and content automatically via the 10xFrame Engine.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["AI Video Generation", "Automated Content Strategy"]
+}
