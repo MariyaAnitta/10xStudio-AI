@@ -8,7 +8,6 @@
     "api": "tsx server.ts",
     "start": "tsx server.ts",
     "build": "vite build",
-    "postinstall": "npm run build",
     "preview": "vite preview",
     "clean": "rm -rf dist",
     "lint": "tsc --noEmit"
