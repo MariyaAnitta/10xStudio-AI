@@ -36,10 +36,10 @@ const CAMPAIGN_TYPES = [
 ];
 
 const INITIAL_PLATFORMS = [
-  { id: 'ig', name: 'Instagram', desc: 'Post + Story · auto-sized', time: 'Today 12:00 PM', checked: true },
-  { id: 'wa', name: 'WhatsApp Business', desc: 'Banner · broadcast list', time: 'Today 1:00 PM', checked: true },
-  { id: 'fb', name: 'Facebook', desc: 'Post · page feed', time: 'Today 2:00 PM', checked: false },
-  { id: 'zomato', name: 'Swiggy / Zomato', desc: 'Listing image · updated live', time: 'Immediately', checked: true },
+  { id: 'ig', name: 'Instagram', desc: 'Post + Story · auto-sized', time: '', scheduleTime: '', type: 'Post', checked: true },
+  { id: 'wa', name: 'WhatsApp Business', desc: 'Banner · broadcast list', time: '', scheduleTime: '', checked: true },
+  { id: 'fb', name: 'Facebook', desc: 'Post · page feed', time: '', scheduleTime: '', checked: false },
+  { id: 'zomato', name: 'Swiggy / Zomato', desc: 'Listing image · updated live', time: '', scheduleTime: '', checked: true },
 ];
 
 // High-fidelity fallback Unsplash stock backgrounds
@@ -359,6 +359,14 @@ export default function CampaignStudioPage() {
     setPlatformsState(prev => prev.map(p => p.id === id ? { ...p, checked: !p.checked } : p));
   };
 
+  const updatePlatformSchedule = (id: string, scheduleTime: string) => {
+    setPlatformsState(prev => prev.map(p => p.id === id ? { ...p, scheduleTime } : p));
+  };
+
+  const updatePlatformType = (id: string, type: string) => {
+    setPlatformsState(prev => prev.map(p => p.id === id ? { ...p, type } : p));
+  };
+
   const captureActivePoster = async (): Promise<Blob | null> => {
     if (!igPostRef.current) return null;
     try {
@@ -382,6 +390,9 @@ export default function CampaignStudioPage() {
       formData.append('caption', caption || '');
       formData.append('dishName', dishName);
       
+      const selected = platformsState.filter(p => p.checked);
+      formData.append('platforms', JSON.stringify(selected));
+
       const res = await fetch('/api/schedule-campaign', {
         method: 'POST',
         body: formData
@@ -411,7 +422,7 @@ export default function CampaignStudioPage() {
       formData.append('caption', caption || '');
       formData.append('dishName', dishName);
       
-      const selected = platformsState.filter(p => p.checked).map(p => p.id);
+      const selected = platformsState.filter(p => p.checked);
       formData.append('platforms', JSON.stringify(selected));
 
       const res = await fetch('/api/publish-now', {
@@ -420,7 +431,7 @@ export default function CampaignStudioPage() {
       });
       const data = await res.json();
       if (data.success) {
-        alert('Campaign successfully published to: ' + selected.join(', '));
+        alert('Campaign successfully published to: ' + selected.map(s => s.name).join(', '));
       } else {
         alert('Publishing failed: ' + (data.error || 'Server error'));
       }
@@ -1224,20 +1235,41 @@ export default function CampaignStudioPage() {
             
             <div className="space-y-4">
               {platformsState.map(platform => (
-                <div key={platform.id} className="flex items-center justify-between py-2 border-b border-slate-100 last:border-0 cursor-pointer" onClick={() => togglePlatform(platform.id)}>
-                  <div className="flex items-center gap-3">
-                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center shadow-inner transition-colors ${platform.checked ? 'bg-red-50' : 'bg-slate-50'}`}>
-                      <Share2 size={15} className={platform.checked ? 'text-red-600' : 'text-slate-400'} />
+                <div key={platform.id} className="flex flex-col gap-2 py-3 border-b border-slate-100 last:border-0">
+                  <div className="flex items-center justify-between cursor-pointer" onClick={() => togglePlatform(platform.id)}>
+                    <div className="flex items-center gap-3">
+                      <div className={`w-8 h-8 rounded-lg flex items-center justify-center shadow-inner transition-colors ${platform.checked ? 'bg-red-50' : 'bg-slate-50'}`}>
+                        <Share2 size={15} className={platform.checked ? 'text-red-600' : 'text-slate-400'} />
+                      </div>
+                      <div>
+                        <div className="text-xs font-bold text-slate-800">{platform.name}</div>
+                        <div className="text-[10px] text-slate-400 font-medium">{platform.desc}</div>
+                      </div>
                     </div>
-                    <div>
-                      <div className="text-xs font-bold text-slate-800">{platform.name}</div>
-                      <div className="text-[10px] text-slate-400 font-medium">{platform.desc}</div>
+                    <div className="flex items-center gap-3">
+                      <input type="checkbox" checked={platform.checked} onChange={() => togglePlatform(platform.id)} className="w-3.5 h-3.5 rounded text-red-600 border-slate-300 focus:ring-red-500 pointer-events-none" />
                     </div>
                   </div>
-                  <div className="flex items-center gap-3">
-                    <span className="text-[10px] text-slate-500 font-bold">{platform.time}</span>
-                    <input type="checkbox" checked={platform.checked} onChange={() => togglePlatform(platform.id)} className="w-3.5 h-3.5 rounded text-red-600 border-slate-300 focus:ring-red-500 pointer-events-none" />
-                  </div>
+                  {platform.checked && (
+                    <div className="pl-11 pr-2 flex items-center gap-3 justify-between mt-1 animate-in fade-in slide-in-from-top-1">
+                      <input 
+                        type="datetime-local" 
+                        value={platform.scheduleTime || ''} 
+                        onChange={(e) => updatePlatformSchedule(platform.id, e.target.value)}
+                        className="text-[10px] border border-slate-200 rounded px-2 py-1 outline-none text-slate-600 font-medium flex-1"
+                      />
+                      {platform.id === 'ig' && (
+                        <select 
+                          value={platform.type || 'Post'} 
+                          onChange={(e) => updatePlatformType(platform.id, e.target.value)}
+                          className="text-[10px] border border-slate-200 rounded px-2 py-1 outline-none text-slate-600 font-medium"
+                        >
+                          <option value="Post">Feed Post</option>
+                          <option value="Story">Story</option>
+                        </select>
+                      )}
+                    </div>
+                  )}
                 </div>
               ))}
             </div>

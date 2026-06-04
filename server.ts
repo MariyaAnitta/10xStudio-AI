@@ -679,6 +679,67 @@ app.get('/api/higgsfield/status', async (req, res) => {
 
 // === Social Media Publishing API ===
 
+const publishToSocialPlatform = async (platform: any, imageUrl: string, caption: string, metaToken: string, fbPageId: string, igBusinessId: string) => {
+  const results: any = {};
+  
+  try {
+    if (platform.id === 'fb') {
+      const fbResponse = await fetch(`https://graph.facebook.com/v19.0/${fbPageId}/photos`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          url: imageUrl,
+          message: caption,
+          access_token: metaToken
+        })
+      });
+      results.facebook = await fbResponse.json();
+      console.log('FB Publish Result:', results.facebook);
+    }
+
+    if (platform.id === 'ig') {
+      const isStory = platform.type === 'Story';
+      const payload: any = {
+        image_url: imageUrl,
+        access_token: metaToken
+      };
+      if (isStory) {
+        payload.media_type = 'STORIES';
+      } else {
+        payload.caption = caption;
+      }
+
+      const igCreateResponse = await fetch(`https://graph.facebook.com/v19.0/${igBusinessId}/media`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      const igCreateData = await igCreateResponse.json();
+      console.log('IG Create Result:', igCreateData);
+      
+      if (igCreateData.id) {
+        const igPublishResponse = await fetch(`https://graph.facebook.com/v19.0/${igBusinessId}/media_publish`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            creation_id: igCreateData.id,
+            access_token: metaToken
+          })
+        });
+        results.instagram = await igPublishResponse.json();
+        console.log('IG Publish Result:', results.instagram);
+      } else {
+        results.instagram = igCreateData;
+      }
+    }
+  } catch (err) {
+    console.error(`Error publishing to ${platform.id}:`, err);
+    results.error = err;
+  }
+  
+  return results;
+};
+
 app.post('/api/publish-now', upload.single('image'), async (req, res) => {
   try {
     const { caption, platforms } = req.body;
@@ -700,45 +761,9 @@ app.post('/api/publish-now', upload.single('image'), async (req, res) => {
     }
 
     const results: any = {};
-
-    if (platformsArr.includes('Facebook')) {
-      const fbResponse = await fetch(`https://graph.facebook.com/v19.0/${fbPageId}/photos`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          url: imageUrl,
-          message: caption,
-          access_token: metaToken
-        })
-      });
-      results.facebook = await fbResponse.json();
-    }
-
-    if (platformsArr.includes('Instagram')) {
-      const igCreateResponse = await fetch(`https://graph.facebook.com/v19.0/${igBusinessId}/media`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          image_url: imageUrl,
-          caption: caption,
-          access_token: metaToken
-        })
-      });
-      const igCreateData = await igCreateResponse.json();
-      
-      if (igCreateData.id) {
-        const igPublishResponse = await fetch(`https://graph.facebook.com/v19.0/${igBusinessId}/media_publish`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            creation_id: igCreateData.id,
-            access_token: metaToken
-          })
-        });
-        results.instagram = await igPublishResponse.json();
-      } else {
-        results.instagram = igCreateData;
-      }
+    for (const platform of platformsArr) {
+      const resData = await publishToSocialPlatform(platform, imageUrl, caption, metaToken, fbPageId, igBusinessId);
+      Object.assign(results, resData);
     }
 
     res.json({ success: true, results });
@@ -750,15 +775,53 @@ app.post('/api/publish-now', upload.single('image'), async (req, res) => {
 
 app.post('/api/schedule-campaign', upload.single('image'), async (req, res) => {
   try {
-    const { caption, platforms, scheduledTime } = req.body;
+    const { caption, platforms } = req.body;
+    const platformsArr = JSON.parse(platforms || '[]');
     
-    // Log the scheduled intent
-    console.log(`[Scheduler] Campaign queued for ${scheduledTime} to ${platforms}`);
+    if (!req.file) {
+      return res.status(400).json({ error: 'Image is required for scheduling' });
+    }
+
+    const baseUrl = process.env.RENDER_EXTERNAL_URL || `${req.protocol}://${req.get('host')}`;
+    const imageUrl = `${baseUrl}/uploads/${req.file.filename}`;
+
+    const metaToken = process.env.META_ACCESS_TOKEN;
+    const fbPageId = process.env.FB_PAGE_ID;
+    const igBusinessId = process.env.IG_BUSINESS_ID;
+
+    if (!metaToken || metaToken === 'your_facebook_access_token_here') {
+      return res.status(400).json({ error: 'Meta Access Token is missing or invalid. Please configure it in your environment variables.' });
+    }
+
+    const now = Date.now();
+    let scheduledCount = 0;
+
+    for (const platform of platformsArr) {
+      if (!platform.scheduleTime) continue;
+      
+      const targetTime = new Date(platform.scheduleTime).getTime();
+      let delayMs = targetTime - now;
+      
+      if (delayMs <= 0) {
+        // If it's in the past, publish immediately
+        publishToSocialPlatform(platform, imageUrl, caption, metaToken, fbPageId, igBusinessId);
+        scheduledCount++;
+      } else {
+        // Schedule for the future
+        // Note: setTimeout limit is ~24.8 days
+        if (delayMs > 2147483647) delayMs = 2147483647; 
+        console.log(`[Scheduler] Queuing post to ${platform.id} in ${Math.round(delayMs / 1000)} seconds...`);
+        setTimeout(() => {
+          publishToSocialPlatform(platform, imageUrl, caption, metaToken, fbPageId, igBusinessId);
+        }, delayMs);
+        scheduledCount++;
+      }
+    }
     
     res.json({ 
       success: true, 
-      message: `Successfully scheduled to publish at ${scheduledTime}`,
-      details: { caption, platforms: JSON.parse(platforms || '[]') } 
+      message: `Successfully scheduled ${scheduledCount} queues!`,
+      details: { caption, platforms: platformsArr } 
     });
   } catch (error: any) {
     console.error('Scheduling error:', error);
