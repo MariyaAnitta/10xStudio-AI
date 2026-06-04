@@ -8,7 +8,7 @@
     "api": "tsx server.ts",
     "start": "tsx server.ts",
     "build": "vite build",
-    "postinstall": "pip install google-genai pillow vertexai || pip3 install google-genai pillow vertexai || true; npm run build",
+    "postinstall": "node -e \"if(process.platform!=='win32'){require('child_process').execSync('./render-build.sh',{stdio:'inherit'})}else{require('child_process').execSync('npm run build',{stdio:'inherit'})}\"",
     "preview": "vite preview",
     "clean": "rm -rf dist",
     "lint": "tsc --noEmit"

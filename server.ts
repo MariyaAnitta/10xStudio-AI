@@ -13,6 +13,13 @@ dotenv.config();
 const app = express();
 const port = process.env.PORT ? parseInt(process.env.PORT, 10) : 3005;
 
+// Use venv python on Linux/Render, fallback to system python on Windows
+const PYTHON_PATH = process.platform === 'win32'
+  ? 'python'
+  : (fs.existsSync(path.join(process.cwd(), 'venv', 'bin', 'python3'))
+      ? path.join(process.cwd(), 'venv', 'bin', 'python3')
+      : 'python3');
+
 // Configure Multer for local uploads
 const uploadDir = path.join(process.cwd(), 'public', 'uploads');
 if (!fs.existsSync(uploadDir)) {
@@ -106,7 +113,7 @@ app.post('/api/generate-composition', async (req, res) => {
 
   try {
     const escapedPrompt = prompt.replace(/"/g, '\\"');
-    const pythonPath = 'python';
+    const pythonPath = PYTHON_PATH;
     const scriptPath = path.join(process.cwd(), 'gemini_bridge.py');
     
     console.log(`Starting Python Bridge for: ${prompt.substring(0, 50)}...`);
@@ -177,7 +184,7 @@ app.post('/api/visual-automation', upload.single('image'), (req, res) => {
 
   const inputPath = req.file.path;
   const outputDir = path.join(process.cwd(), 'public', 'assets', 'processed');
-  const pythonPath = 'python';
+  const pythonPath = PYTHON_PATH;
   const scriptPath = path.join(process.cwd(), 'visual_processor_nano.py');
 
   console.log(`Starting Visual Automation Processor for: ${req.file.originalname}`);
@@ -261,7 +268,7 @@ app.post('/api/visual-intelligence', upload.single('image'), async (req, res) =>
     dishName, orders, margin, views, revenue, rating
   });
 
-  const pythonPath = 'python';
+  const pythonPath = PYTHON_PATH;
   const scriptPath = path.join(process.cwd(), 'visual_intelligence.py');
 
   console.log(`Starting Visual Intelligence Analysis for: ${originalName}`);
@@ -333,7 +340,7 @@ app.post('/api/generate-menu', upload.single('image'), (req, res) => {
   
   console.log(`Starting Menu Card Generation for: ${dishName}`);
 
-  const pythonPath = 'python';
+  const pythonPath = PYTHON_PATH;
   const scriptPath = path.join(process.cwd(), 'menu_generator.py');
   
   const args = [
@@ -456,7 +463,7 @@ app.post('/api/export-mp4', async (req, res) => {
   try {
     fs.writeFileSync(tempHtmlPath, html_content, 'utf-8');
 
-    const pythonPath = 'python';
+    const pythonPath = PYTHON_PATH;
     const scriptPath = path.join(process.cwd(), 'video_renderer.py');
     const duration = 15; // default 15s
 
@@ -537,7 +544,7 @@ app.post('/api/generate-campaign', upload.single('image'), (req, res) => {
   console.log(`Starting Campaign Generation for: ${dishName}, Type: ${campaignType}, Mode: ${mode || 'all'}`);
 
   const scriptPath = path.join(process.cwd(), 'campaign_generator.py');
-  const pythonPath = 'python';
+  const pythonPath = PYTHON_PATH;
   
   // Create arguments safely
   const args = [
