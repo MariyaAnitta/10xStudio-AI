@@ -404,9 +404,13 @@ export default function CampaignStudioPage() {
       const blob = await captureActivePoster();
       if (!blob) throw new Error('Could not capture image for schedule');
       
+      const fullCaption = hashtags && hashtags.length > 0
+        ? `${caption || ''}\n\n${hashtags.join(' ')}`
+        : (caption || '');
+
       const formData = new FormData();
       formData.append('image', blob, 'schedule_creative.png');
-      formData.append('caption', caption || '');
+      formData.append('caption', fullCaption);
       formData.append('dishName', dishName);
       
       const selected = platformsState.filter(p => p.checked);
@@ -436,9 +440,13 @@ export default function CampaignStudioPage() {
       const blob = await captureActivePoster();
       if (!blob) throw new Error('Could not capture image for publishing');
       
+      const fullCaption = hashtags && hashtags.length > 0
+        ? `${caption || ''}\n\n${hashtags.join(' ')}`
+        : (caption || '');
+
       const formData = new FormData();
       formData.append('image', blob, 'publish_creative.png');
-      formData.append('caption', caption || '');
+      formData.append('caption', fullCaption);
       formData.append('dishName', dishName);
       
       const selected = platformsState.filter(p => p.checked);
