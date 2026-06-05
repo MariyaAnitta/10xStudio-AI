@@ -679,18 +679,19 @@ app.get('/api/higgsfield/status', async (req, res) => {
 
 // === Social Media Publishing API ===
 
-const publishToSocialPlatform = async (platform: any, imageUrl: string, caption: string, metaToken: string, fbPageId: string, igBusinessId: string) => {
+const publishToSocialPlatform = async (platform: any, imageUrl: string, caption: string, metaToken: string, fbPageId: string, igBusinessId: string, fbPageToken?: string) => {
   const results: any = {};
   
   try {
     if (platform.id === 'fb') {
+      const tokenToUse = fbPageToken || metaToken;
       const fbResponse = await fetch(`https://graph.facebook.com/v19.0/${fbPageId}/photos`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           url: imageUrl,
           message: caption,
-          access_token: metaToken
+          access_token: tokenToUse
         })
       });
       results.facebook = await fbResponse.json();
@@ -755,6 +756,7 @@ app.post('/api/publish-now', upload.single('image'), async (req, res) => {
     const metaToken = process.env.META_ACCESS_TOKEN;
     const fbPageId = process.env.FB_PAGE_ID;
     const igBusinessId = process.env.IG_BUSINESS_ID;
+    const fbPageToken = process.env.PAGE_ACCESS_TOKEN;
 
     if (!metaToken || metaToken === 'your_facebook_access_token_here') {
       return res.status(400).json({ error: 'Meta Access Token is missing or invalid. Please configure it in your environment variables.' });
@@ -762,7 +764,7 @@ app.post('/api/publish-now', upload.single('image'), async (req, res) => {
 
     const results: any = {};
     for (const platform of platformsArr) {
-      const resData = await publishToSocialPlatform(platform, imageUrl, caption, metaToken, fbPageId, igBusinessId);
+      const resData = await publishToSocialPlatform(platform, imageUrl, caption, metaToken, fbPageId, igBusinessId, fbPageToken);
       Object.assign(results, resData);
     }
 
@@ -788,13 +790,14 @@ app.post('/api/schedule-campaign', upload.single('image'), async (req, res) => {
     const metaToken = process.env.META_ACCESS_TOKEN;
     const fbPageId = process.env.FB_PAGE_ID;
     const igBusinessId = process.env.IG_BUSINESS_ID;
+    const fbPageToken = process.env.PAGE_ACCESS_TOKEN;
 
-    if (!metaToken || metaToken === 'your_facebook_access_token_here') {
-      return res.status(400).json({ error: 'Meta Access Token is missing or invalid. Please configure it in your environment variables.' });
+    if (!metaToken) {
+      return res.status(400).json({ error: 'Meta Access Token is missing' });
     }
 
-    const now = Date.now();
     let scheduledCount = 0;
+    const now = Date.now();
 
     for (const platform of platformsArr) {
       if (!platform.scheduleTime) continue;
@@ -804,7 +807,7 @@ app.post('/api/schedule-campaign', upload.single('image'), async (req, res) => {
       
       if (delayMs <= 0) {
         // If it's in the past, publish immediately
-        publishToSocialPlatform(platform, imageUrl, caption, metaToken, fbPageId, igBusinessId);
+        publishToSocialPlatform(platform, imageUrl, caption, metaToken, fbPageId, igBusinessId, fbPageToken);
         scheduledCount++;
       } else {
         // Schedule for the future
@@ -812,7 +815,7 @@ app.post('/api/schedule-campaign', upload.single('image'), async (req, res) => {
         if (delayMs > 2147483647) delayMs = 2147483647; 
         console.log(`[Scheduler] Queuing post to ${platform.id} in ${Math.round(delayMs / 1000)} seconds...`);
         setTimeout(() => {
-          publishToSocialPlatform(platform, imageUrl, caption, metaToken, fbPageId, igBusinessId);
+          publishToSocialPlatform(platform, imageUrl, caption, metaToken, fbPageId, igBusinessId, fbPageToken);
         }, delayMs);
         scheduledCount++;
       }
