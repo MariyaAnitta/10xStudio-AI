@@ -719,15 +719,30 @@ const publishToSocialPlatform = async (platform: any, imageUrl: string, caption:
       console.log('IG Create Result:', igCreateData);
       
       if (igCreateData.id) {
-        const igPublishResponse = await fetch(`https://graph.facebook.com/v19.0/${igBusinessId}/media_publish`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            creation_id: igCreateData.id,
-            access_token: metaToken
-          })
-        });
-        results.instagram = await igPublishResponse.json();
+        let maxRetries = 5;
+        let igPublishData = null;
+        
+        while (maxRetries > 0) {
+          const igPublishResponse = await fetch(`https://graph.facebook.com/v19.0/${igBusinessId}/media_publish`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              creation_id: igCreateData.id,
+              access_token: metaToken
+            })
+          });
+          igPublishData = await igPublishResponse.json();
+          
+          if (igPublishData.error && igPublishData.error.code === 9007) {
+            console.log(`IG Media not ready. Retrying in 5 seconds... (${maxRetries} attempts left)`);
+            await new Promise(resolve => setTimeout(resolve, 5000));
+            maxRetries--;
+          } else {
+            break;
+          }
+        }
+        
+        results.instagram = igPublishData;
         console.log('IG Publish Result:', results.instagram);
       } else {
         results.instagram = igCreateData;
