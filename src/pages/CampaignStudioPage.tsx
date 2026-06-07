@@ -505,39 +505,37 @@ export default function CampaignStudioPage() {
       primaryThemeBg = '#FFFFFF'; accentThemeColor = '#D4121A'; textColor = '#0F172A';
     }
 
-    // Specialized universal layout for Landscape (FB Event) to prevent aggressive cropping of square AI images
     if (aspectRatio === '1.91:1') {
       return (
-        <div className="w-full h-full relative overflow-hidden group select-none flex bg-black shadow-inner">
-          {/* Left side: Perfect square aspect for uncropped food photo */}
-          <div className="w-1/2 h-full bg-cover bg-center relative" style={{ backgroundImage: `url(${bgUrl})` }}>
-            <div className="absolute inset-0 bg-gradient-to-r from-transparent to-black/80" />
+        <div className="w-full h-full relative overflow-hidden group select-none flex bg-black">
+          {/* Background Image spanning the whole width */}
+          <div className="absolute inset-0 bg-cover bg-center transition-all duration-700 group-hover:scale-105" style={{ backgroundImage: `url(${bgUrl})` }}>
+            {/* Gradient overlay to make text readable on the right side */}
+            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-black/40 to-black/90" />
           </div>
           
-          {/* Right side: Information block */}
-          <div className="w-1/2 h-full flex flex-col justify-center p-6 relative" style={{ backgroundColor: primaryThemeBg }}>
-            <div className="z-10 bg-white/10 backdrop-blur-md px-3 py-1 text-[8px] font-black uppercase tracking-[0.2em] text-white rounded-full self-start mb-4 border border-white/20 shadow-lg">
+          {/* Content aligned to the right */}
+          <div className="absolute top-0 bottom-0 right-0 w-[55%] flex flex-col justify-center p-8 z-10">
+            <div className="bg-white/10 backdrop-blur-md px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.2em] text-white rounded-full self-start mb-4 border border-white/20 shadow-lg">
               {brandKit.restaurantName}
             </div>
             
-            <div className="z-10">
-              <div className="text-[9px] uppercase tracking-widest text-white/70 font-bold mb-1">{taglineText || (isCombo ? 'Combo Deal' : 'Special Offer')}</div>
-              <h2 className="text-3xl font-black uppercase leading-[1.1] text-white drop-shadow-lg mb-2">
-                {dishName}
-              </h2>
-              {isCombo && <h3 className="text-lg font-bold text-white/90 mb-2">+ {dishName2}</h3>}
-              
-              <p className="text-[10px] font-medium text-white/70 leading-relaxed mb-4 line-clamp-2">
-                {description}
-              </p>
-              
-              <div className="flex items-center gap-4 border-t border-white/20 pt-3">
-                <div className="text-3xl font-black text-white" style={{ color: accentThemeColor }}>
-                  ₹{displayPrice}
-                </div>
-                <div className="bg-white text-black text-[9px] font-black uppercase px-4 py-2.5 rounded-full flex items-center gap-1 shadow-xl transform transition-transform hover:scale-105">
-                  {badgeText || 'ORDER NOW'} <ChevronRight size={12} strokeWidth={3} />
-                </div>
+            <div className="text-[12px] uppercase tracking-widest font-bold mb-2" style={{ color: accentThemeColor }}>{taglineText || (isCombo ? 'Combo Deal' : 'Special Offer')}</div>
+            <h2 className="text-4xl font-black uppercase leading-[1.1] text-white drop-shadow-2xl mb-3" style={{ textShadow: '0 4px 10px rgba(0,0,0,0.5)' }}>
+              {dishName}
+            </h2>
+            {isCombo && <h3 className="text-xl font-bold text-white/90 mb-3">+ {dishName2}</h3>}
+            
+            <p className="text-[12px] font-medium text-white/80 leading-relaxed mb-6 line-clamp-3 pr-4">
+              {description}
+            </p>
+            
+            <div className="flex items-center gap-5 mt-auto">
+              <div className="text-4xl font-black text-white drop-shadow-lg">
+                ₹{displayPrice}
+              </div>
+              <div className="bg-white text-black text-[11px] font-black uppercase px-6 py-3 rounded-full flex items-center gap-1.5 shadow-xl transform transition-transform hover:scale-105" style={{ color: primaryThemeBg }}>
+                {badgeText || 'ORDER NOW'} <ChevronRight size={14} strokeWidth={3} />
               </div>
             </div>
           </div>
@@ -593,47 +591,50 @@ export default function CampaignStudioPage() {
       );
     }
 
-    // Layout 2: Flash Sale / Promo (Bold, newspaper/structural, massive typography)
-    if (selectedCampaign === 'Flash sale') {
+    // Layout 2: Flash Sale / Promo (High-end modern layout, like Image 2)
+    if (selectedCampaign === 'Flash sale' || selectedCampaign === 'New launch') {
       return (
-        <div className="w-full h-full relative overflow-hidden group select-none flex flex-col" style={{ backgroundColor: primaryThemeBg }}>
-          <div className="absolute inset-0 bg-cover bg-center transition-all duration-700 mix-blend-luminosity opacity-40 group-hover:scale-105 group-hover:mix-blend-normal group-hover:opacity-80" style={{ backgroundImage: `url(${bgUrl})` }} />
-          <div className="absolute inset-0 bg-gradient-to-tr from-black/90 via-black/40 to-transparent" />
+        <div className="w-full h-full relative overflow-hidden group select-none flex flex-col justify-end" style={{ backgroundColor: primaryThemeBg }}>
+          <div className="absolute inset-0 bg-cover bg-center transition-all duration-700 group-hover:scale-105" style={{ backgroundImage: `url(${bgUrl})` }} />
+          {/* Smooth gradient overlay focusing on the bottom */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-transparent" />
           
-          <div className="z-10 p-5 h-full flex flex-col justify-between">
-            {/* Top heavy block */}
-            <div className="bg-white p-4 shadow-2xl border-l-8 self-start max-w-[85%]" style={{ borderColor: accentThemeColor }}>
-              <div className="text-[8px] font-black uppercase tracking-[0.2em] mb-1 text-slate-400">{brandKit.restaurantName}</div>
-              <h2 className="text-4xl font-black uppercase leading-[0.85] tracking-tighter" style={{ color: primaryThemeBg }}>
-                {taglineText || 'LIMITED'}
-              </h2>
-              <h2 className="text-4xl font-black uppercase leading-[0.85] tracking-tighter text-slate-900 mt-1 mb-2">
-                PROMO
-              </h2>
-              <div className="h-0.5 w-1/3 bg-slate-200 mb-2" />
-              <p className="text-[10px] font-bold text-slate-600 leading-snug uppercase tracking-wide">
-                Special offer on our <br/><span style={{ color: primaryThemeBg }}>{dishName}</span>
-              </p>
-            </div>
-            
-            {/* Bottom price block */}
-            <div className="flex items-end justify-between mt-auto w-full">
-              <div className="bg-black/80 px-4 py-3 border border-white/20 shadow-2xl flex-1 mr-4 rounded-tr-3xl">
-                <div className="text-[8px] text-white/70 font-bold uppercase tracking-widest mb-1">Only For</div>
-                <div className="text-4xl font-black leading-none drop-shadow-md" style={{ color: accentThemeColor }}>₹{displayPrice}</div>
-                <div className="text-[7px] text-white/50 uppercase mt-1 line-clamp-1">{description}</div>
-              </div>
-              
-              <div className="w-14 h-14 rounded-full flex flex-col items-center justify-center font-black text-center shadow-[0_0_20px_rgba(0,0,0,0.5)] transform -rotate-12 border-4 border-black" style={{ backgroundColor: accentThemeColor, color: '#000' }}>
-                <span className="text-[6px] uppercase tracking-widest opacity-80">Buy</span>
-                <span className="text-[10px] leading-none my-0.5">NOW</span>
-              </div>
-            </div>
-            
-            <div className="text-[6px] text-white/60 mt-4 border-t border-white/10 pt-2 flex justify-between uppercase font-bold tracking-widest">
-              <span>{footerPhone}</span>
-              <span>{footerWeb}</span>
-            </div>
+          {/* Top floating elements */}
+          <div className="absolute top-6 left-6 z-10">
+             <div className="bg-white/20 backdrop-blur-md px-4 py-2 text-[10px] font-black uppercase tracking-[0.25em] text-white rounded-full border border-white/30 shadow-lg">
+                {brandKit.restaurantName}
+             </div>
+          </div>
+          <div className="absolute top-6 right-6 z-10">
+             <div className="w-16 h-16 rounded-full flex items-center justify-center font-black text-[12px] uppercase tracking-wide shadow-2xl transform rotate-12" style={{ backgroundColor: accentThemeColor, color: '#111' }}>
+                {taglineText || 'PROMO'}
+             </div>
+          </div>
+
+          <div className="z-10 px-6 pb-8 w-full flex flex-col">
+             <h2 className="text-5xl font-black uppercase leading-[0.9] text-white drop-shadow-2xl mb-2">
+               {dishName.split(' ').map((word, i) => (
+                 <span key={i} className={i % 2 === 1 ? 'text-white' : ''} style={{ color: i % 2 === 1 ? accentThemeColor : 'white' }}>{word} </span>
+               ))}
+             </h2>
+             <p className="text-[12px] font-medium text-white/80 leading-relaxed mb-6 max-w-[90%]">
+               {description}
+             </p>
+             
+             <div className="flex items-center justify-between mt-2">
+               <div className="text-[42px] font-black text-white drop-shadow-lg">
+                 ₹{displayPrice}
+               </div>
+               <div className="bg-white text-black text-[12px] font-black uppercase px-6 py-4 rounded-full flex items-center gap-2 shadow-2xl transform transition-transform hover:scale-105">
+                 ORDER NOW <ChevronRight size={14} strokeWidth={4} />
+               </div>
+             </div>
+             
+             <div className="h-px w-full bg-white/20 my-4" />
+             <div className="text-[8px] text-white/60 flex justify-between uppercase font-black tracking-[0.2em]">
+               <span>{footerPhone}</span>
+               <span>{footerWeb}</span>
+             </div>
           </div>
         </div>
       );
@@ -700,55 +701,52 @@ export default function CampaignStudioPage() {
       );
     }
 
-    // Layout 4: Dish Promo / New Launch / Default (Vibrant, Sizzling, highly modern)
+    // Layout 4: Dish Promo / New Launch / Default (Magazine-style inner box layout)
     return (
-      <div className="w-full h-full relative overflow-hidden group select-none flex flex-col" style={{ backgroundColor: primaryThemeBg }}>
+      <div className="w-full h-full relative overflow-hidden group select-none flex flex-col items-center justify-center bg-black">
+        {/* Deep blurred backdrop image */}
+        <div className="absolute inset-0 bg-cover bg-center opacity-40 blur-md scale-110" style={{ backgroundImage: `url(${bgUrl})` }} />
+        <div className="absolute inset-0 bg-black/30" />
         
-        {/* Deep backdrop image */}
-        <div className="absolute inset-0 bg-cover bg-center transition-all duration-1000 group-hover:scale-105 opacity-80" style={{ backgroundImage: `url(${bgUrl})` }} />
-        
-        {/* Dynamic sweeping gradient overlay for depth */}
-        <div className="absolute inset-0 bg-gradient-to-tr from-black/90 via-black/40 to-transparent" />
-        <div className="absolute bottom-0 left-0 w-full h-1/2 bg-gradient-to-t from-black to-transparent" />
-        
-        <div className="z-20 relative h-full flex flex-col justify-between p-5">
-          <div className="flex justify-between items-start w-full">
-            <div className="bg-white/10 backdrop-blur-md px-3 py-1 text-[7px] font-black uppercase tracking-[0.2em] text-white rounded-full shadow-lg border border-white/20">
-              {brandKit.restaurantName}
-            </div>
-            <div className="w-10 h-10 rounded-full flex flex-col items-center justify-center font-black shadow-2xl transform rotate-6 border-2 border-white/20" style={{ backgroundColor: accentThemeColor, color: '#000' }}>
-              <span className="text-[10px] leading-none">{selectedCampaign === 'New launch' ? 'NEW' : 'PROMO'}</span>
-            </div>
+        {/* Top Brand Name */}
+        <div className="z-20 absolute top-6 w-full text-center">
+          <span className="text-[9px] font-black uppercase tracking-[0.3em] text-white/80 drop-shadow-md">
+            {brandKit.restaurantName}
+          </span>
+        </div>
+
+        {/* Central Magazine Box */}
+        <div className="z-20 w-[85%] bg-[#FDFBF7] rounded flex flex-col items-center pt-8 pb-6 px-5 shadow-2xl relative">
+          
+          {/* Huge Magazine Title */}
+          <h2 className="text-[32px] font-black uppercase leading-[0.85] w-full text-center tracking-tighter mb-4" style={{ color: primaryThemeBg }}>
+            {taglineText || dishName}
+          </h2>
+          
+          {/* Inner Image Frame */}
+          <div className="w-full aspect-square rounded-full overflow-hidden shadow-2xl mb-6 relative border-4 border-white">
+            <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: `url(${bgUrl})` }} />
           </div>
           
-          <div className="mt-auto w-full">
-            <h2 className="text-4xl font-black uppercase leading-[0.9] text-white drop-shadow-[0_5px_15px_rgba(0,0,0,0.5)] tracking-tight">
-              {dishName.split(' ').map((word, i) => (
-                <span key={i} className="block" style={{ color: i % 2 !== 0 ? accentThemeColor : 'white' }}>{word}</span>
-              ))}
-            </h2>
-            
-            <p className="text-[10px] font-medium text-white/80 mt-3 max-w-[90%] leading-relaxed drop-shadow-md">
-              {description}
-            </p>
-            
-            <div className="flex items-center justify-between mt-4">
-              <div className="text-3xl font-black text-white drop-shadow-xl" style={{ textShadow: `0 2px 10px ${accentThemeColor}50` }}>
-                ₹{displayPrice}
-              </div>
-              
-              <div className="bg-white text-black text-[9px] font-black uppercase px-4 py-2.5 rounded-full flex items-center gap-1.5 shadow-[0_4px_20px_rgba(255,255,255,0.3)] transition-transform hover:scale-105">
-                ORDER NOW <ChevronRight size={10} strokeWidth={3}/>
-              </div>
-            </div>
-            
-            <div className="w-full h-px bg-white/20 mt-4 mb-2" />
-            
-            <div className="flex justify-between text-[6px] text-white/60 uppercase tracking-widest font-bold">
-              <span>{footerPhone}</span>
-              <span>{footerWeb}</span>
-            </div>
+          {/* Description Text */}
+          <p className="text-[8px] font-bold text-slate-800 leading-snug text-center uppercase tracking-widest px-2 mb-6">
+            {description}
+          </p>
+          
+          {/* Order Button */}
+          <div className="w-full max-w-[200px] border-2 border-black text-black font-black text-[10px] py-2.5 rounded-full uppercase tracking-widest text-center shadow-sm hover:bg-black hover:text-white transition-colors cursor-pointer">
+            ORDER NOW • ₹{displayPrice}
           </div>
+        </div>
+        
+        {/* Footer */}
+        <div className="z-20 absolute bottom-6 w-full flex justify-between px-8 text-center">
+          <span className="text-[8px] font-bold uppercase tracking-[0.2em] text-white/70 drop-shadow-sm">
+            {footerWeb}
+          </span>
+          <span className="text-[8px] font-bold uppercase tracking-[0.2em] text-white/70 drop-shadow-sm">
+            {footerPhone}
+          </span>
         </div>
       </div>
     );
