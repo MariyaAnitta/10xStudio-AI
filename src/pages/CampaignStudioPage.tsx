@@ -93,7 +93,6 @@ export default function CampaignStudioPage() {
   // Publishing states
   const [platformsState, setPlatformsState] = useState(INITIAL_PLATFORMS);
   const [isPublishing, setIsPublishing] = useState(false);
-  const [isScheduling, setIsScheduling] = useState(false);
   
   const igPostRef = useRef<HTMLDivElement>(null);
   const igStoryRef = useRef<HTMLDivElement>(null);
@@ -101,8 +100,9 @@ export default function CampaignStudioPage() {
   const fbEventRef = useRef<HTMLDivElement>(null);
   const reelThumbRef = useRef<HTMLDivElement>(null);
 
-  const [capturedPosterBlob, setCapturedPosterBlob] = useState<Blob | null>(null);
+  const [capturedPosters, setCapturedPosters] = useState<Record<string, Blob>>({});
   const [isPreparingToPublish, setIsPreparingToPublish] = useState(false);
+  const [isScheduling, setIsScheduling] = useState(false);
 
   // Sync workspace brand kit
   useEffect(() => {
@@ -371,36 +371,44 @@ export default function CampaignStudioPage() {
   };
 
   const captureActivePoster = async (): Promise<Blob | null> => {
-    // Attempt to capture whichever poster is currently mounted in the DOM
+    // Only used as fallback now if specific platform images aren't available
     const activeRef = igPostRef.current || igStoryRef.current || fbEventRef.current || reelThumbRef.current;
     if (activeRef) {
       try {
         const dataUrl = await htmlToImage.toPng(activeRef, { quality: 1, pixelRatio: 2.0 });
         const res = await fetch(dataUrl);
-        const blob = await res.blob();
-        setCapturedPosterBlob(blob);
-        return blob;
+        return await res.blob();
       } catch (e) {
-        console.error('Failed to capture poster from DOM:', e);
+        console.error('Failed to capture active poster from DOM:', e);
       }
     }
-    // Fall back to pre-captured blob
-    if (capturedPosterBlob) return capturedPosterBlob;
+    // Fall back to the first available captured poster
+    const keys = Object.keys(capturedPosters);
+    if (keys.length > 0) return capturedPosters[keys[0]];
     return null;
   };
 
   const handleContinueToStep4 = async () => {
     setIsPreparingToPublish(true);
-    const activeRef = igPostRef.current || igStoryRef.current || fbEventRef.current || reelThumbRef.current;
-    if (activeRef) {
-      try {
-        const dataUrl = await htmlToImage.toPng(activeRef, { quality: 1, pixelRatio: 2.0 });
-        const res = await fetch(dataUrl);
-        setCapturedPosterBlob(await res.blob());
-      } catch (e) {
-        console.error('Failed to pre-capture poster:', e);
+    const posters: Record<string, Blob> = {};
+    const refs = [
+      { id: 'ig_post', ref: igPostRef },
+      { id: 'ig_story', ref: igStoryRef },
+      { id: 'fb', ref: fbEventRef }
+    ];
+
+    for (const { id, ref } of refs) {
+      if (ref.current) {
+        try {
+          const dataUrl = await htmlToImage.toPng(ref.current, { quality: 1, pixelRatio: 2.0 });
+          const res = await fetch(dataUrl);
+          posters[id] = await res.blob();
+        } catch (e) {
+          console.error(`Failed to pre-capture poster for ${id}:`, e);
+        }
       }
     }
+    setCapturedPosters(posters);
     setIsPreparingToPublish(false);
     setActiveStep(4);
   };
@@ -408,15 +416,25 @@ export default function CampaignStudioPage() {
   const handleScheduleCampaign = async () => {
     setIsScheduling(true);
     try {
-      const blob = await captureActivePoster();
-      if (!blob) throw new Error('Could not capture image for schedule');
+      const formData = new FormData();
+      
+      // Append specific platform images if available
+      if (capturedPosters.ig_post) formData.append('image_ig_post', capturedPosters.ig_post, 'ig_post.png');
+      if (capturedPosters.ig_story) formData.append('image_ig_story', capturedPosters.ig_story, 'ig_story.png');
+      if (capturedPosters.fb) formData.append('image_fb', capturedPosters.fb, 'fb.png');
+      
+      // Fallback single image
+      const fallbackBlob = await captureActivePoster();
+      if (fallbackBlob) formData.append('image', fallbackBlob, 'schedule_creative.png');
+
+      if (!capturedPosters.ig_post && !capturedPosters.ig_story && !capturedPosters.fb && !fallbackBlob) {
+        throw new Error('Could not capture image for schedule');
+      }
       
       const fullCaption = hashtags && hashtags.length > 0
         ? `${caption || ''}\n\n${hashtags.join(' ')}`
         : (caption || '');
 
-      const formData = new FormData();
-      formData.append('image', blob, 'schedule_creative.png');
       formData.append('caption', fullCaption);
       formData.append('dishName', dishName);
       
@@ -444,15 +462,25 @@ export default function CampaignStudioPage() {
   const handlePublishNow = async () => {
     setIsPublishing(true);
     try {
-      const blob = await captureActivePoster();
-      if (!blob) throw new Error('Could not capture image for publishing');
+      const formData = new FormData();
       
+      // Append specific platform images if available
+      if (capturedPosters.ig_post) formData.append('image_ig_post', capturedPosters.ig_post, 'ig_post.png');
+      if (capturedPosters.ig_story) formData.append('image_ig_story', capturedPosters.ig_story, 'ig_story.png');
+      if (capturedPosters.fb) formData.append('image_fb', capturedPosters.fb, 'fb.png');
+      
+      // Fallback single image
+      const fallbackBlob = await captureActivePoster();
+      if (fallbackBlob) formData.append('image', fallbackBlob, 'publish_creative.png');
+
+      if (!capturedPosters.ig_post && !capturedPosters.ig_story && !capturedPosters.fb && !fallbackBlob) {
+        throw new Error('Could not capture image for publishing');
+      }
+
       const fullCaption = hashtags && hashtags.length > 0
         ? `${caption || ''}\n\n${hashtags.join(' ')}`
         : (caption || '');
 
-      const formData = new FormData();
-      formData.append('image', blob, 'publish_creative.png');
       formData.append('caption', fullCaption);
       formData.append('dishName', dishName);
       
@@ -1075,46 +1103,40 @@ export default function CampaignStudioPage() {
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 items-end">
                 
                 {/* Format 1: IG Post 1:1 */}
-                {(activeTab === 'All formats' || activeTab === 'IG Post') && (
-                  <div className="flex flex-col items-center">
-                    <div 
-                      ref={igPostRef}
-                      className="w-full aspect-square rounded-2xl shadow-lg border border-slate-200 relative overflow-hidden"
-                    >
-                      {renderPosterTemplate('1:1', 0)}
-                    </div>
-                    <span className="text-[10px] font-bold text-slate-500 mt-2 tracking-wider">IG POST · 1080×1080</span>
+                <div className={`flex flex-col items-center ${(activeTab === 'All formats' || activeTab === 'IG Post') ? '' : 'absolute opacity-0 pointer-events-none -z-50'}`}>
+                  <div 
+                    ref={igPostRef}
+                    className="w-full aspect-square rounded-2xl shadow-lg border border-slate-200 relative overflow-hidden"
+                  >
+                    {renderPosterTemplate('1:1', 0)}
                   </div>
-                )}
+                  <span className="text-[10px] font-bold text-slate-500 mt-2 tracking-wider">IG POST · 1080×1080</span>
+                </div>
 
                 {/* Format 2: IG Story 9:16 */}
-                {(activeTab === 'All formats' || activeTab === 'IG Story') && (
-                  <div className="flex flex-col items-center">
-                    <div 
-                      ref={igStoryRef}
-                      className="w-full aspect-[9/16] rounded-2xl shadow-lg border border-slate-200 relative overflow-hidden"
-                    >
-                      {renderPosterTemplate('9:16', 1)}
-                    </div>
-                    <span className="text-[10px] font-bold text-slate-500 mt-2 tracking-wider">IG STORY · 1080×1920</span>
+                <div className={`flex flex-col items-center ${(activeTab === 'All formats' || activeTab === 'IG Story') ? '' : 'absolute opacity-0 pointer-events-none -z-50'}`}>
+                  <div 
+                    ref={igStoryRef}
+                    className="w-full aspect-[9/16] rounded-2xl shadow-lg border border-slate-200 relative overflow-hidden"
+                  >
+                    {renderPosterTemplate('9:16', 1)}
                   </div>
-                )}
+                  <span className="text-[10px] font-bold text-slate-500 mt-2 tracking-wider">IG STORY · 1080×1920</span>
+                </div>
 
                 {/* Format 3: WA Status 9:16 — identical spec to IG Story */}
 
                 {/* Format 4: FB Event Banner 1.91:1 */}
-                {(activeTab === 'All formats' || activeTab === 'FB Event') && (
-                  <div className="flex flex-col items-center">
-                    <div 
-                      ref={fbEventRef}
-                      style={{ aspectRatio: '1.91 / 1' }}
-                      className="w-full rounded-2xl shadow-lg border border-slate-200 relative overflow-hidden"
-                    >
-                      {renderPosterTemplate('1.91:1', 3)}
-                    </div>
-                    <span className="text-[10px] font-bold text-slate-500 mt-2 tracking-wider">FB EVENT · 1200×628</span>
+                <div className={`flex flex-col items-center ${(activeTab === 'All formats' || activeTab === 'FB Event') ? '' : 'absolute opacity-0 pointer-events-none -z-50'}`}>
+                  <div 
+                    ref={fbEventRef}
+                    style={{ aspectRatio: '1.91 / 1' }}
+                    className="w-full rounded-2xl shadow-lg border border-slate-200 relative overflow-hidden"
+                  >
+                    {renderPosterTemplate('1.91:1', 3)}
                   </div>
-                )}
+                  <span className="text-[10px] font-bold text-slate-500 mt-2 tracking-wider">FB EVENT · 1200×628</span>
+                </div>
 
                 {/* Format 5: Reel Thumbnail 9:16 */}
                 {(activeTab === 'All formats' || activeTab === 'IG Post') && (

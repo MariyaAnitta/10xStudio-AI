@@ -756,17 +756,16 @@ const publishToSocialPlatform = async (platform: any, imageUrl: string, caption:
   return results;
 };
 
-app.post('/api/publish-now', upload.single('image'), async (req, res) => {
+app.post('/api/publish-now', upload.any(), async (req, res) => {
   try {
     const { caption, platforms } = req.body;
     const platformsArr = JSON.parse(platforms || '[]');
     
-    if (!req.file) {
+    if (!req.files || !Array.isArray(req.files) || req.files.length === 0) {
       return res.status(400).json({ error: 'Image is required for publishing' });
     }
 
     const baseUrl = process.env.RENDER_EXTERNAL_URL || `${req.protocol}://${req.get('host')}`;
-    const imageUrl = `${baseUrl}/uploads/${req.file.filename}`;
 
     const metaToken = process.env.META_ACCESS_TOKEN;
     const fbPageId = process.env.FB_PAGE_ID;
@@ -779,6 +778,12 @@ app.post('/api/publish-now', upload.single('image'), async (req, res) => {
 
     const results: any = {};
     for (const platform of platformsArr) {
+      const fileField = `image_${platform.id}`;
+      const file = (req.files as any[]).find(f => f.fieldname === fileField) || (req.files as any[])[0];
+      
+      if (!file) continue;
+      const imageUrl = `${baseUrl}/uploads/${file.filename}`;
+      
       const resData = await publishToSocialPlatform(platform, imageUrl, caption, metaToken, fbPageId, igBusinessId, fbPageToken);
       Object.assign(results, resData);
     }
@@ -790,17 +795,16 @@ app.post('/api/publish-now', upload.single('image'), async (req, res) => {
   }
 });
 
-app.post('/api/schedule-campaign', upload.single('image'), async (req, res) => {
+app.post('/api/schedule-campaign', upload.any(), async (req, res) => {
   try {
     const { caption, platforms } = req.body;
     const platformsArr = JSON.parse(platforms || '[]');
     
-    if (!req.file) {
+    if (!req.files || !Array.isArray(req.files) || req.files.length === 0) {
       return res.status(400).json({ error: 'Image is required for scheduling' });
     }
 
     const baseUrl = process.env.RENDER_EXTERNAL_URL || `${req.protocol}://${req.get('host')}`;
-    const imageUrl = `${baseUrl}/uploads/${req.file.filename}`;
 
     const metaToken = process.env.META_ACCESS_TOKEN;
     const fbPageId = process.env.FB_PAGE_ID;
@@ -816,6 +820,12 @@ app.post('/api/schedule-campaign', upload.single('image'), async (req, res) => {
 
     for (const platform of platformsArr) {
       if (!platform.scheduleTime) continue;
+      
+      const fileField = `image_${platform.id}`;
+      const file = (req.files as any[]).find(f => f.fieldname === fileField) || (req.files as any[])[0];
+      
+      if (!file) continue;
+      const imageUrl = `${baseUrl}/uploads/${file.filename}`;
       
       const targetTime = new Date(platform.scheduleTime).getTime();
       let delayMs = targetTime - now;
