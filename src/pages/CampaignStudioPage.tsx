@@ -36,7 +36,8 @@ const CAMPAIGN_TYPES = [
 ];
 
 const INITIAL_PLATFORMS = [
-  { id: 'ig', name: 'Instagram', desc: 'Post + Story · auto-sized', time: '', scheduleTime: '', type: 'Post', checked: true },
+  { id: 'ig_post', name: 'Instagram Post', desc: 'Square 1:1 feed post', time: '', scheduleTime: '', checked: true },
+  { id: 'ig_story', name: 'Instagram Story', desc: 'Vertical 9:16 story', time: '', scheduleTime: '', checked: true },
   { id: 'fb', name: 'Facebook', desc: 'Post · page feed', time: '', scheduleTime: '', checked: false },
   { id: 'zomato', name: 'Swiggy / Zomato', desc: 'Listing image · updated live', time: '', scheduleTime: '', checked: false },
 ];
@@ -370,10 +371,11 @@ export default function CampaignStudioPage() {
   };
 
   const captureActivePoster = async (): Promise<Blob | null> => {
-    // Always re-capture from DOM first if available (handles going back from step 4)
-    if (igPostRef.current) {
+    // Attempt to capture whichever poster is currently mounted in the DOM
+    const activeRef = igPostRef.current || igStoryRef.current || fbEventRef.current || reelThumbRef.current;
+    if (activeRef) {
       try {
-        const dataUrl = await htmlToImage.toPng(igPostRef.current, { quality: 1, pixelRatio: 2.0 });
+        const dataUrl = await htmlToImage.toPng(activeRef, { quality: 1, pixelRatio: 2.0 });
         const res = await fetch(dataUrl);
         const blob = await res.blob();
         setCapturedPosterBlob(blob);
@@ -389,9 +391,10 @@ export default function CampaignStudioPage() {
 
   const handleContinueToStep4 = async () => {
     setIsPreparingToPublish(true);
-    if (igPostRef.current) {
+    const activeRef = igPostRef.current || igStoryRef.current || fbEventRef.current || reelThumbRef.current;
+    if (activeRef) {
       try {
-        const dataUrl = await htmlToImage.toPng(igPostRef.current, { quality: 1, pixelRatio: 2.0 });
+        const dataUrl = await htmlToImage.toPng(activeRef, { quality: 1, pixelRatio: 2.0 });
         const res = await fetch(dataUrl);
         setCapturedPosterBlob(await res.blob());
       } catch (e) {
@@ -1104,7 +1107,8 @@ export default function CampaignStudioPage() {
                   <div className="flex flex-col items-center">
                     <div 
                       ref={fbEventRef}
-                      className="w-full aspect-[1.91/1] rounded-2xl shadow-lg border border-slate-200 relative overflow-hidden"
+                      style={{ aspectRatio: '1.91 / 1' }}
+                      className="w-full rounded-2xl shadow-lg border border-slate-200 relative overflow-hidden"
                     >
                       {renderPosterTemplate('1.91:1', 3)}
                     </div>
@@ -1279,16 +1283,6 @@ export default function CampaignStudioPage() {
                         onChange={(e) => updatePlatformSchedule(platform.id, e.target.value)}
                         className="text-[10px] border border-slate-200 rounded px-2 py-1 outline-none text-slate-600 font-medium flex-1"
                       />
-                      {platform.id === 'ig' && (
-                        <select 
-                          value={platform.type || 'Post'} 
-                          onChange={(e) => updatePlatformType(platform.id, e.target.value)}
-                          className="text-[10px] border border-slate-200 rounded px-2 py-1 outline-none text-slate-600 font-medium"
-                        >
-                          <option value="Post">Feed Post</option>
-                          <option value="Story">Story</option>
-                        </select>
-                      )}
                     </div>
                   )}
                 </div>

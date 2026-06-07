@@ -698,8 +698,8 @@ const publishToSocialPlatform = async (platform: any, imageUrl: string, caption:
       console.log('FB Publish Result:', results.facebook);
     }
 
-    if (platform.id === 'ig') {
-      const isStory = platform.type === 'Story';
+    if (platform.id === 'ig_post' || platform.id === 'ig_story') {
+      const isStory = platform.id === 'ig_story';
       const payload: any = {
         image_url: imageUrl,
         access_token: metaToken
