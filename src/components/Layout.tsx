@@ -192,6 +192,7 @@ export default function Layout({ children }: LayoutProps) {
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            {location.pathname !== '/brand' && (
             <button 
               onClick={resetSession}
               style={{
@@ -213,6 +214,7 @@ export default function Layout({ children }: LayoutProps) {
               <RotateCcw size={12} />
               Reset Session
             </button>
+            )}
 
             {/* Avatar & Sign Out */}
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>

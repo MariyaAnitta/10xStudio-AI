@@ -72,35 +72,135 @@ def generate_campaign_caption(client, dish_name, campaign_type, brand_style, ton
 def generate_campaign_image(client, dish_name, campaign_type, brand_style, output_dir):
     """
     Generates a high-quality master campaign image using Gemini 2.5 Flash Image.
-    """
-    
-    # Base prompt rules
-    base_prompt = f"""
-    ACT AS A WORLD-CLASS COMMERCIAL FOOD PHOTOGRAPHER AND AD DESIGNER.
-    Subject: {dish_name}
-    Brand Style Constraint: {brand_style}
-    
-    MANDATORY RULES:
-    1. Focus heavily on making the dish look unbelievably delicious, mouth-watering, and premium.
-    2. Professional studio lighting, rich vibrant colors, 8k resolution detail.
-    3. Generate ONLY the final photograph (NO text, NO overlays).
+    Each campaign type has a unique, highly engineered prompt for outstanding visuals.
     """
 
-    # Customize composition based on campaign type so it perfectly fits our CSS templates
-    composition_prompt = ""
-    
-    if campaign_type == "Festival" or campaign_type == "Seasonal":
-        composition_prompt = "COMPOSITION: A highly elegant, dark and moody top-down or slight-angle shot. The dish must be perfectly centered. Leave a large amount of dark, empty negative space at the top and bottom of the image for text. Use elegant subtle glowing elements in the background."
+    STYLE_MAP = {
+        'luxury': 'ultra-premium, dark and moody lighting, deep jewel tones, cinematic depth of field, editorial magazine quality',
+        'casual': 'bright, warm, and inviting lighting, vibrant saturated colors, fun and energetic, lifestyle feel',
+        'minimal': 'clean white negative space, soft diffused lighting, muted neutral tones, Scandinavian minimalist aesthetic',
+        'bold': 'high-contrast punchy colors, dramatic direct lighting, strong shadows, sports/streetwear energy',
+    }
+    style_descriptor = STYLE_MAP.get(brand_style.lower(), 'professional commercial food photography quality')
+
+    if campaign_type in ["Festival", "Seasonal"]:
+        final_prompt = f"""
+        ROLE: World-class commercial food photographer and festival poster director.
+        
+        SUBJECT: {dish_name}
+        VISUAL STYLE: {style_descriptor}
+        
+        CREATE A STUNNING FESTIVAL/CELEBRATION CAMPAIGN IMAGE:
+        
+        COMPOSITION & LAYOUT (CRITICAL):
+        - Place the dish as the centerpiece, shot from a slight overhead angle (45 degrees).
+        - Surround the dish with elegant, thematic festive elements: candles, marigold petals, golden sparkles, moody bokeh lights in the background.
+        - The top 30% of the frame must be deep, dark empty space (for large text overlay).
+        - The bottom 25% must also be a dark, clean gradient fade to black (for price/CTA text).
+        - Use warm amber and gold color grading to evoke celebration.
+        
+        TECHNICAL SPECS:
+        - 9:16 vertical portrait orientation (Instagram Story / Reel Thumbnail format).
+        - 8K ultra-sharp detail on the food.
+        - Rich vignette darkening around all 4 edges.
+        - Render ONLY the photograph. Absolutely NO text, watermarks, or overlays.
+        """
+
     elif campaign_type == "Combo offer":
-        composition_prompt = "COMPOSITION: A split or wide-angle layout showing the main dish paired perfectly with sides. Use a vibrant dual-tone background or a clean surface. Leave prominent negative space on the left or bottom for promotional text blocks."
-    elif campaign_type == "Flash sale":
-        composition_prompt = "COMPOSITION: A highly energetic, punchy close-up of the dish on a solid, vivid background. Create a structural, magazine-style layout by keeping the subject in the lower-right or center, leaving massive solid-color negative space on the top and left for giant typography."
-    else:
-        # Dish promo, New launch, etc
-        composition_prompt = "COMPOSITION: A sizzling, bright, and vibrant close-up shot. The background should be colorful and light, making the dish pop out dramatically. Leave ample negative space all around the dish for overlapping text layers."
+        final_prompt = f"""
+        ROLE: World-class commercial food photographer specializing in combo deal advertising.
+        
+        SUBJECT: {dish_name} combo meal
+        VISUAL STYLE: {style_descriptor}
+        
+        CREATE A STUNNING COMBO DEAL CAMPAIGN IMAGE:
+        
+        COMPOSITION & LAYOUT (CRITICAL):
+        - Use a wide, slightly overhead shot that shows 2-3 food items beautifully arranged together.
+        - The main dish on the right side, complementary items (fries, drink, sides) artistically placed on the left.
+        - Shoot on a premium dark wooden surface or dark stone surface with warm hero lighting from the top-left.
+        - The LEFT 45% of the frame must have dark, rich background with significant empty space for text.
+        - Items should be steaming, fresh, glistening with sauce, photographed at peak deliciousness.
+        - Include subtle depth of field, front items in sharp focus, background slightly blurred.
+        
+        TECHNICAL SPECS:
+        - 1:1 square or slightly wide format.
+        - Ultra vibrant food colors that pop off the dark background.
+        - NO text, NO price tags, NO watermarks. ONLY the food photograph.
+        """
 
-    final_prompt = base_prompt + "\n" + composition_prompt
-    
+    elif campaign_type == "Flash sale":
+        final_prompt = f"""
+        ROLE: World-class advertising photographer specializing in high-energy Flash Sale campaigns.
+        
+        SUBJECT: {dish_name}
+        VISUAL STYLE: Bold, punchy, high-energy. {style_descriptor}
+        
+        CREATE AN ULTRA-ENERGETIC FLASH SALE CAMPAIGN IMAGE:
+        
+        COMPOSITION & LAYOUT (CRITICAL):
+        - The dish must be HERO-shot from a dramatic low-angle (eye level or below), making it look enormous and irresistible.
+        - Place the food in the RIGHT half or CENTER-RIGHT of the frame.
+        - The LEFT 40% must be a clean, bold solid-color background (matching the food's complementary color) — this is the text zone.
+        - The food must be touching or slightly breaking the border between the solid color and background, creating a dynamic split-composition.
+        - Lighting must be dramatic: strong overhead key light, creating rich shadows and glowing highlights on the food.
+        - The food should look EXPLOSIVE — sesame seeds scattered, sauce dripping, cheese pull, steam rising.
+        
+        TECHNICAL SPECS:
+        - 1:1 or 4:5 format.
+        - Maximum saturation and contrast.
+        - NO text, NO price tags, NO watermarks. ONLY the food photograph.
+        """
+
+    elif campaign_type == "New launch":
+        final_prompt = f"""
+        ROLE: World-class brand launch photographer and art director.
+        
+        SUBJECT: {dish_name} — new product reveal
+        VISUAL STYLE: Premium, aspirational, debut-worthy. {style_descriptor}
+        
+        CREATE A STUNNING NEW LAUNCH REVEAL IMAGE:
+        
+        COMPOSITION & LAYOUT (CRITICAL):
+        - Photograph the dish as if it is a luxury product being unveiled — centered, perfectly lit, hero shot.
+        - Use a clean, pure black OR deep midnight blue background with a dramatic single overhead light creating a spotlight effect.
+        - The dish should be elevated (on a dark slate board, premium plate, or reflective surface).
+        - Create a subtle glowing halo effect around the dish using backlit steam or bokeh.
+        - Leave a significant top section (30%) and bottom section (25%) of pure dark space for text overlays.
+        - Every garnish, sauce drizzle, and texture must be picture perfect — this is a debut.
+        
+        TECHNICAL SPECS:
+        - 9:16 vertical portrait format preferred.
+        - Studio-quality lighting, deep blacks, rich highlights.
+        - NO text, NO price tags, NO watermarks. ONLY the photograph.
+        """
+
+    else:
+        # Dish promo (default)
+        final_prompt = f"""
+        ROLE: World-class commercial food photographer creating a viral social media promotional poster.
+        
+        SUBJECT: {dish_name}
+        VISUAL STYLE: {style_descriptor}
+        
+        CREATE A STUNNING DISH PROMOTIONAL IMAGE:
+        
+        COMPOSITION & LAYOUT (CRITICAL):
+        - Use a dramatic 3/4 angle shot (not top-down, not side-on — a beautiful 45-degree angle) that shows the depth and texture of the dish.
+        - The dish must fill approximately 60% of the frame, positioned in the CENTER-BOTTOM area.
+        - The top 35% of the frame should be the natural background, beautifully blurred (bokeh) with warm restaurant ambient lighting.
+        - The bottom 15% should gently fade into a slightly darker gradient.
+        - The food must look OUTRAGEOUSLY delicious: cheese pull, steam wisps, sauce glistening, perfectly garnished.
+        - Use a vibrant, warm color palette — amber, gold, rich reds and oranges from the food itself.
+        - Include a shallow depth of field: front edge of the dish slightly soft, the center dead-sharp.
+        
+        TECHNICAL SPECS:
+        - 9:16 vertical portrait orientation (Instagram format).
+        - 8K ultra-sharp detail on the hero food item.
+        - Natural but enhanced food-grade lighting.
+        - NO text, NO price tags, NO overlays, NO watermarks. ONLY the food photograph.
+        """
+
     max_retries = 2
     for attempt in range(max_retries + 1):
         try:
@@ -114,7 +214,7 @@ def generate_campaign_image(client, dish_name, campaign_type, brand_style, outpu
                         ]
                     )
                 ],
-                config=types.GenerateContentConfig(temperature=0.4)
+                config=types.GenerateContentConfig(temperature=0.3)
             )
             
             generated_image_bytes = None

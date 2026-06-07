@@ -37,9 +37,8 @@ const CAMPAIGN_TYPES = [
 
 const INITIAL_PLATFORMS = [
   { id: 'ig', name: 'Instagram', desc: 'Post + Story · auto-sized', time: '', scheduleTime: '', type: 'Post', checked: true },
-  { id: 'wa', name: 'WhatsApp Business', desc: 'Banner · broadcast list', time: '', scheduleTime: '', checked: true },
   { id: 'fb', name: 'Facebook', desc: 'Post · page feed', time: '', scheduleTime: '', checked: false },
-  { id: 'zomato', name: 'Swiggy / Zomato', desc: 'Listing image · updated live', time: '', scheduleTime: '', checked: true },
+  { id: 'zomato', name: 'Swiggy / Zomato', desc: 'Listing image · updated live', time: '', scheduleTime: '', checked: false },
 ];
 
 // High-fidelity fallback Unsplash stock backgrounds
@@ -371,16 +370,21 @@ export default function CampaignStudioPage() {
   };
 
   const captureActivePoster = async (): Promise<Blob | null> => {
-    if (capturedPosterBlob) return capturedPosterBlob;
-    if (!igPostRef.current) return null;
-    try {
-      const dataUrl = await htmlToImage.toPng(igPostRef.current, { quality: 1, pixelRatio: 2.0 });
-      const res = await fetch(dataUrl);
-      return await res.blob();
-    } catch (e) {
-      console.error('Failed to capture poster:', e);
-      return null;
+    // Always re-capture from DOM first if available (handles going back from step 4)
+    if (igPostRef.current) {
+      try {
+        const dataUrl = await htmlToImage.toPng(igPostRef.current, { quality: 1, pixelRatio: 2.0 });
+        const res = await fetch(dataUrl);
+        const blob = await res.blob();
+        setCapturedPosterBlob(blob);
+        return blob;
+      } catch (e) {
+        console.error('Failed to capture poster from DOM:', e);
+      }
     }
+    // Fall back to pre-captured blob
+    if (capturedPosterBlob) return capturedPosterBlob;
+    return null;
   };
 
   const handleContinueToStep4 = async () => {
@@ -1041,7 +1045,6 @@ export default function CampaignStudioPage() {
                 { tab: 'All formats', emoji: '' },
                 { tab: 'IG Post', emoji: '📷' },
                 { tab: 'IG Story', emoji: '🎞️' },
-                { tab: 'WA Status', emoji: '💬' },
                 { tab: 'FB Event', emoji: '🗓️' },
               ].map(({ tab, emoji }) => (
                 <button 
@@ -1097,20 +1100,6 @@ export default function CampaignStudioPage() {
                 )}
 
                 {/* Format 3: WA Status 9:16 — identical spec to IG Story */}
-                {(activeTab === 'All formats' || activeTab === 'WA Status') && (
-                  <div className="flex flex-col items-center">
-                    <div 
-                      ref={waStatusRef}
-                      className="w-full aspect-[9/16] rounded-2xl shadow-lg border border-slate-200 relative overflow-hidden"
-                    >
-                      {renderPosterTemplate('9:16', 2)}
-                    </div>
-                    <div className="flex items-center gap-1.5 mt-2">
-                      <span className="text-[10px] font-bold text-slate-500 tracking-wider">WA STATUS · 1080×1920</span>
-                      <span className="text-[9px] bg-green-100 text-green-700 font-black px-1.5 py-0.5 rounded-full">WhatsApp</span>
-                    </div>
-                  </div>
-                )}
 
                 {/* Format 4: FB Event Banner 1.91:1 */}
                 {(activeTab === 'All formats' || activeTab === 'FB Event') && (
