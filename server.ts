@@ -804,32 +804,34 @@ app.post('/api/schedule-campaign', upload.any(), async (req, res) => {
       return res.status(400).json({ error: 'Image is required for scheduling' });
     }
 
-    const baseUrl = process.env.RENDER_EXTERNAL_URL || `${req.protocol}://${req.get('host')}`;
-
-    // Build a map of platform id -> accessible image URL
-    const imageUrls: Record<string, string> = {};
-    for (const file of req.files as any[]) {
-      const platformId = file.fieldname.replace('image_', ''); // e.g. 'ig_post', 'ig_story', 'fb'
-      imageUrls[platformId] = `${baseUrl}/uploads/${file.filename}`;
-    }
-    // Fallback: if a generic 'image' was uploaded, assign to all platforms
-    const fallbackFile = (req.files as any[]).find(f => f.fieldname === 'image');
-    if (fallbackFile) {
-      imageUrls['fallback'] = `${baseUrl}/uploads/${fallbackFile.filename}`;
-    }
-
     const metaToken = process.env.META_ACCESS_TOKEN;
     if (!metaToken) {
       return res.status(400).json({ error: 'Meta Access Token is missing' });
     }
 
     const selectedPlatforms = platformsArr.filter((p: any) => p.scheduleTime);
-
     if (selectedPlatforms.length === 0) {
       return res.status(400).json({ error: 'No schedule time provided for any platform.' });
     }
 
-    // Save to Firestore queue — persistent, survives server restarts/sleep
+    // Upload each image to GCS so URLs survive server restarts/ephemeral disk wipes
+    const imageUrls: Record<string, string> = {};
+    for (const file of req.files as any[]) {
+      const platformId = file.fieldname.replace('image_', ''); // e.g. 'ig_post', 'ig_story', 'fb', 'fallback'
+      const destination = `scheduled/${Date.now()}-${platformId}-${file.originalname}`;
+      try {
+        const gcsUrl = await uploadToFirebaseStorage(file.path, destination);
+        imageUrls[platformId] = gcsUrl;
+        console.log(`[Scheduler] GCS upload for ${platformId}: ${gcsUrl}`);
+      } catch (uploadErr: any) {
+        console.error(`[Scheduler] GCS upload failed for ${platformId}:`, uploadErr.message);
+        // Fallback to local URL only if GCS fails
+        const baseUrl = process.env.RENDER_EXTERNAL_URL || `${req.protocol}://${req.get('host')}`;
+        imageUrls[platformId] = `${baseUrl}/uploads/${file.filename}`;
+      }
+    }
+
+    // Save to Firestore queue — now with permanent GCS image URLs
     const docId = await saveScheduledPost({
       platforms: selectedPlatforms,
       imageUrls,
@@ -852,6 +854,7 @@ app.post('/api/schedule-campaign', upload.any(), async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
+
 
 // === Cron Endpoint — called every 5 minutes by an external scheduler ===
 // Set up at: https://cron-job.org → target URL: GET https://your-app.onrender.com/api/cron/process-schedules
@@ -911,6 +914,60 @@ app.get('*', (req, res) => {
   res.sendFile(path.join(clientDist, 'index.html'));
 });
 
+// === Internal scheduled posts processor (runs on startup + every 5 minutes) ===
+const runScheduledPostsProcessor = async () => {
+  try {
+    const duePosts = await getAndLockDuePosts();
+    if (duePosts.length === 0) {
+      console.log('[AUTO-SCHEDULER] No posts due at this time.');
+      return;
+    }
+
+    const metaToken = process.env.META_ACCESS_TOKEN || '';
+    const fbPageId = process.env.FB_PAGE_ID || '';
+    const igBusinessId = process.env.IG_BUSINESS_ID || '';
+    const fbPageToken = process.env.PAGE_ACCESS_TOKEN;
+    let processedCount = 0;
+
+    for (const post of duePosts) {
+      const allResults: any = {};
+      const now = new Date().toISOString();
+
+      for (const platform of (post.platforms || [])) {
+        if (!platform.scheduleTime || platform.scheduleTime > now) continue;
+
+        const imageUrl = post.imageUrls[platform.id] || post.imageUrls['fallback'] || Object.values(post.imageUrls)[0] as string;
+        if (!imageUrl) {
+          console.warn(`[AUTO-SCHEDULER] No image URL for platform ${platform.id} in post ${post.id}`);
+          continue;
+        }
+
+        console.log(`[AUTO-SCHEDULER] 🚀 Publishing ${platform.id} for doc ${post.id}...`);
+        const result = await publishToSocialPlatform(
+          platform, imageUrl, post.caption, metaToken, fbPageId, igBusinessId, fbPageToken
+        );
+        Object.assign(allResults, result);
+      }
+
+      await markPostPublished(post.id, allResults);
+      processedCount++;
+    }
+
+    if (processedCount > 0) {
+      console.log(`[AUTO-SCHEDULER] ✅ Processed ${processedCount} scheduled post(s).`);
+    }
+  } catch (err: any) {
+    console.error('[AUTO-SCHEDULER] Error:', err.message);
+  }
+};
+
 app.listen(port, '0.0.0.0', () => {
   console.log(`10xStudio API (Python Bridged) running at http://0.0.0.0:${port}`);
+  
+  // Process any missed posts immediately on startup
+  setTimeout(runScheduledPostsProcessor, 5000);
+  
+  // Then check every 5 minutes continuously
+  setInterval(runScheduledPostsProcessor, 5 * 60 * 1000);
+  console.log('[AUTO-SCHEDULER] Scheduled posts processor started (runs every 5 minutes).');
 });
