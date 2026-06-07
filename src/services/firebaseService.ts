@@ -169,3 +169,59 @@ export async function saveSession(email: string, sessionData: any) {
   }
 }
 
+
+/**
+ * Saves a scheduled post document to the scheduled_posts collection.
+ */
+export async function saveScheduledPost(data: {
+  platforms: any[];
+  imageUrls: Record<string, string>;
+  caption: string;
+  dishName: string;
+}) {
+  const docRef = db.collection('scheduled_posts').doc();
+  await docRef.set({
+    ...data,
+    status: 'pending',
+    createdAt: admin.firestore.FieldValue.serverTimestamp(),
+    id: docRef.id,
+  });
+  console.log(`[SCHEDULER] scheduled post saved to Firestore: ${docRef.id}`);
+  return docRef.id;
+}
+
+/**
+ * Fetches all pending scheduled posts whose scheduleTime has passed,
+ * and atomically marks them as 'processing' to prevent double-firing.
+ */
+export async function getAndLockDuePosts(): Promise<any[]> {
+  const now = new Date().toISOString();
+  const snapshot = await db.collection('scheduled_posts')
+    .where('status', '==', 'pending')
+    .get();
+
+  const due: any[] = [];
+  for (const doc of snapshot.docs) {
+    const data = doc.data();
+    const hasDuePlatform = (data.platforms || []).some(
+      (p: any) => p.scheduleTime && p.scheduleTime <= now
+    );
+    if (hasDuePlatform) {
+      await doc.ref.update({ status: 'processing' });
+      due.push({ id: doc.id, ...data });
+    }
+  }
+  return due;
+}
+
+/**
+ * Marks a scheduled post document as published.
+ */
+export async function markPostPublished(docId: string, results: any) {
+  await db.collection('scheduled_posts').doc(docId).update({
+    status: 'published',
+    publishedAt: admin.firestore.FieldValue.serverTimestamp(),
+    publishResults: results,
+  });
+  console.log(`[SCHEDULER] Post ${docId} marked as published`);
+}

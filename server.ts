@@ -6,7 +6,7 @@ import path from 'path';
 import fs from 'fs';
 import multer from 'multer';
 import { fetchSceneImage } from './src/services/pexels_fetcher';
-import { saveToFirestore, uploadToFirebaseStorage, getStorageAndDbStatus, getSession, saveSession } from './src/services/firebaseService';
+import { saveToFirestore, uploadToFirebaseStorage, getStorageAndDbStatus, getSession, saveSession, saveScheduledPost, getAndLockDuePosts, markPostPublished } from './src/services/firebaseService';
 
 dotenv.config();
 
@@ -797,7 +797,7 @@ app.post('/api/publish-now', upload.any(), async (req, res) => {
 
 app.post('/api/schedule-campaign', upload.any(), async (req, res) => {
   try {
-    const { caption, platforms } = req.body;
+    const { caption, platforms, dishName } = req.body;
     const platformsArr = JSON.parse(platforms || '[]');
     
     if (!req.files || !Array.isArray(req.files) || req.files.length === 0) {
@@ -806,56 +806,105 @@ app.post('/api/schedule-campaign', upload.any(), async (req, res) => {
 
     const baseUrl = process.env.RENDER_EXTERNAL_URL || `${req.protocol}://${req.get('host')}`;
 
-    const metaToken = process.env.META_ACCESS_TOKEN;
-    const fbPageId = process.env.FB_PAGE_ID;
-    const igBusinessId = process.env.IG_BUSINESS_ID;
-    const fbPageToken = process.env.PAGE_ACCESS_TOKEN;
+    // Build a map of platform id -> accessible image URL
+    const imageUrls: Record<string, string> = {};
+    for (const file of req.files as any[]) {
+      const platformId = file.fieldname.replace('image_', ''); // e.g. 'ig_post', 'ig_story', 'fb'
+      imageUrls[platformId] = `${baseUrl}/uploads/${file.filename}`;
+    }
+    // Fallback: if a generic 'image' was uploaded, assign to all platforms
+    const fallbackFile = (req.files as any[]).find(f => f.fieldname === 'image');
+    if (fallbackFile) {
+      imageUrls['fallback'] = `${baseUrl}/uploads/${fallbackFile.filename}`;
+    }
 
+    const metaToken = process.env.META_ACCESS_TOKEN;
     if (!metaToken) {
       return res.status(400).json({ error: 'Meta Access Token is missing' });
     }
 
-    let scheduledCount = 0;
-    const now = Date.now();
+    const selectedPlatforms = platformsArr.filter((p: any) => p.scheduleTime);
 
-    for (const platform of platformsArr) {
-      if (!platform.scheduleTime) continue;
-      
-      const fileField = `image_${platform.id}`;
-      const file = (req.files as any[]).find(f => f.fieldname === fileField) || (req.files as any[])[0];
-      
-      if (!file) continue;
-      const imageUrl = `${baseUrl}/uploads/${file.filename}`;
-      
-      const targetTime = new Date(platform.scheduleTime).getTime();
-      let delayMs = targetTime - now;
-      
-      if (delayMs <= 0) {
-        // If it's in the past, publish immediately
-        publishToSocialPlatform(platform, imageUrl, caption, metaToken, fbPageId, igBusinessId, fbPageToken);
-        scheduledCount++;
-      } else {
-        // Schedule for the future
-        // Note: setTimeout limit is ~24.8 days
-        if (delayMs > 2147483647) delayMs = 2147483647; 
-        console.log(`[Scheduler] Queuing post to ${platform.id} in ${Math.round(delayMs / 1000)} seconds...`);
-        setTimeout(() => {
-          publishToSocialPlatform(platform, imageUrl, caption, metaToken, fbPageId, igBusinessId, fbPageToken);
-        }, delayMs);
-        scheduledCount++;
-      }
+    if (selectedPlatforms.length === 0) {
+      return res.status(400).json({ error: 'No schedule time provided for any platform.' });
     }
+
+    // Save to Firestore queue — persistent, survives server restarts/sleep
+    const docId = await saveScheduledPost({
+      platforms: selectedPlatforms,
+      imageUrls,
+      caption,
+      dishName: dishName || '',
+    });
+
+    console.log(`[Scheduler] Queued ${selectedPlatforms.length} platform(s) to Firestore. Doc: ${docId}`);
+    selectedPlatforms.forEach((p: any) => {
+      console.log(`[Scheduler] Platform: ${p.id} scheduled for ${p.scheduleTime}`);
+    });
     
     res.json({ 
       success: true, 
-      message: `Successfully scheduled ${scheduledCount} queues!`,
-      details: { caption, platforms: platformsArr } 
+      message: `Scheduled ${selectedPlatforms.length} platform(s) successfully! They will post at their configured times.`,
+      firestoreDocId: docId,
     });
   } catch (error: any) {
     console.error('Scheduling error:', error);
     res.status(500).json({ error: error.message });
   }
 });
+
+// === Cron Endpoint — called every 5 minutes by an external scheduler ===
+// Set up at: https://cron-job.org → target URL: GET https://your-app.onrender.com/api/cron/process-schedules
+app.get('/api/cron/process-schedules', async (req, res) => {
+  try {
+    console.log('[CRON] Running scheduled posts processor...');
+    const duePosts = await getAndLockDuePosts();
+
+    if (duePosts.length === 0) {
+      console.log('[CRON] No posts due. Sleeping.');
+      return res.json({ success: true, processed: 0 });
+    }
+
+    const metaToken = process.env.META_ACCESS_TOKEN || '';
+    const fbPageId = process.env.FB_PAGE_ID || '';
+    const igBusinessId = process.env.IG_BUSINESS_ID || '';
+    const fbPageToken = process.env.PAGE_ACCESS_TOKEN;
+
+    let processedCount = 0;
+
+    for (const post of duePosts) {
+      const allResults: any = {};
+      const now = new Date().toISOString();
+
+      for (const platform of (post.platforms || [])) {
+        if (!platform.scheduleTime || platform.scheduleTime > now) continue;
+
+        const imageUrl = post.imageUrls[platform.id] || post.imageUrls['fallback'] || Object.values(post.imageUrls)[0];
+        if (!imageUrl) {
+          console.warn(`[CRON] No image URL for platform ${platform.id} in post ${post.id}`);
+          continue;
+        }
+
+        console.log(`[CRON] Publishing ${platform.id} for post ${post.id}...`);
+        const result = await publishToSocialPlatform(
+          platform, imageUrl, post.caption, metaToken, fbPageId, igBusinessId, fbPageToken
+        );
+        Object.assign(allResults, result);
+      }
+
+      await markPostPublished(post.id, allResults);
+      processedCount++;
+    }
+
+    console.log(`[CRON] Done. Processed ${processedCount} post(s).`);
+    res.json({ success: true, processed: processedCount });
+  } catch (error: any) {
+    console.error('[CRON] Error:', error.message);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+
 
 // Fallback for React Router (must be AFTER all API routes)
 app.get('*', (req, res) => {

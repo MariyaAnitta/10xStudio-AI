@@ -438,7 +438,11 @@ export default function CampaignStudioPage() {
       formData.append('caption', fullCaption);
       formData.append('dishName', dishName);
       
-      const selected = platformsState.filter(p => p.checked);
+      // Convert scheduleTime to UTC ISO string so server reads it correctly regardless of timezone
+      const selected = platformsState.filter(p => p.checked).map(p => ({
+        ...p,
+        scheduleTime: p.scheduleTime ? new Date(p.scheduleTime).toISOString() : ''
+      }));
       formData.append('platforms', JSON.stringify(selected));
 
       const res = await fetch('/api/schedule-campaign', {
