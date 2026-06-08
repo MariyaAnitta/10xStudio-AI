@@ -685,16 +685,46 @@ const publishToSocialPlatform = async (platform: any, imageUrl: string, caption:
   try {
     if (platform.id === 'fb') {
       const tokenToUse = fbPageToken || metaToken;
-      const fbResponse = await fetch(`https://graph.facebook.com/v19.0/${fbPageId}/photos`, {
+      
+      // Step 1: Upload photo as unpublished attachment
+      const uploadResponse = await fetch(`https://graph.facebook.com/v19.0/${fbPageId}/photos`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           url: imageUrl,
-          message: caption,
+          published: false,             // don't publish yet, just get the photo id
           access_token: tokenToUse
         })
       });
-      results.facebook = await fbResponse.json();
+      const uploadData = await uploadResponse.json();
+      console.log('FB Photo Upload Result:', uploadData);
+
+      if (uploadData.id) {
+        // Step 2: Publish to feed with the attached photo
+        const feedResponse = await fetch(`https://graph.facebook.com/v19.0/${fbPageId}/feed`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            message: caption,
+            attached_media: [{ media_fbid: uploadData.id }],
+            access_token: tokenToUse
+          })
+        });
+        results.facebook = await feedResponse.json();
+      } else {
+        // Fallback: post as a link if photo upload failed
+        console.warn('FB photo upload failed, falling back to feed link post');
+        const feedResponse = await fetch(`https://graph.facebook.com/v19.0/${fbPageId}/feed`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            message: caption,
+            link: imageUrl,
+            access_token: tokenToUse
+          })
+        });
+        results.facebook = await feedResponse.json();
+      }
       console.log('FB Publish Result:', results.facebook);
     }
 
