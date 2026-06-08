@@ -685,8 +685,12 @@ const publishToSocialPlatform = async (platform: any, imageUrl: string, caption:
   try {
     if (platform.id === 'fb') {
       const tokenToUse = fbPageToken || metaToken;
-      
-      // Step 1: Upload photo as unpublished attachment
+
+      if (!fbPageId) {
+        console.error('[FB] FB_PAGE_ID is not set in environment variables!');
+        results.facebook = { error: 'FB_PAGE_ID is not configured. Please add it to your Render environment variables.' };
+        return results;
+      }
       const uploadResponse = await fetch(`https://graph.facebook.com/v19.0/${fbPageId}/photos`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

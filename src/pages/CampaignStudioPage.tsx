@@ -391,18 +391,36 @@ export default function CampaignStudioPage() {
   const handleContinueToStep4 = async () => {
     setIsPreparingToPublish(true);
     const posters: Record<string, Blob> = {};
+
+    // Target output pixel dimensions per platform (actual social media sizes)
+    const formatSpecs: Record<string, { targetW: number; targetH: number }> = {
+      ig_post:  { targetW: 1080, targetH: 1080 },   // Instagram Post: 1:1
+      ig_story: { targetW: 1080, targetH: 1920 },   // Instagram Story: 9:16
+      fb:       { targetW: 1200, targetH: 628  },   // Facebook Event Banner: 1.91:1
+    };
+
     const refs = [
-      { id: 'ig_post', ref: igPostRef },
+      { id: 'ig_post',  ref: igPostRef  },
       { id: 'ig_story', ref: igStoryRef },
-      { id: 'fb', ref: fbEventRef }
+      { id: 'fb',       ref: fbEventRef }
     ];
 
     for (const { id, ref } of refs) {
       if (ref.current) {
         try {
-          const dataUrl = await htmlToImage.toPng(ref.current, { quality: 1, pixelRatio: 2.0 });
+          const spec = formatSpecs[id];
+          // Calculate pixelRatio so the output is exactly the target resolution
+          const renderedWidth = ref.current.getBoundingClientRect().width || ref.current.offsetWidth || 300;
+          const pixelRatio = spec.targetW / renderedWidth;
+
+          const dataUrl = await htmlToImage.toPng(ref.current, {
+            quality: 1,
+            pixelRatio,
+            width: renderedWidth,
+          });
           const res = await fetch(dataUrl);
           posters[id] = await res.blob();
+          console.log(`[Capture] ${id}: ${spec.targetW}x${spec.targetH} (pixelRatio ${pixelRatio.toFixed(2)})`);
         } catch (e) {
           console.error(`Failed to pre-capture poster for ${id}:`, e);
         }
