@@ -151,7 +151,7 @@ app.post('/api/generate-composition', async (req, res) => {
             
             if (imageData && imageData.localPath) {
               const placeholderRegex = new RegExp(`PLACEHOLDER_IMAGE_${i}`, 'g');
-              const fullUrl = `http://localhost:3005${imageData.localPath}`;
+              const fullUrl = imageData.localPath;
               result.html = result.html.replace(placeholderRegex, fullUrl);
               console.log(`[Pexels] Scene ${i} globally mapped to absolute asset: ${fullUrl}`);
             } else {
@@ -380,7 +380,7 @@ app.post('/api/generate-menu', upload.single('image'), (req, res) => {
         console.log(`[Pexels] Fetching professional food photo for: ${dishName}`);
         const pexelsData = await fetchSceneImage(`${dishName} food photography`, `menu_${Date.now()}`, 'landscape');
         if (pexelsData && pexelsData.localPath) {
-          result.image_url = `http://localhost:${port}${pexelsData.localPath}`;
+          result.image_url = pexelsData.localPath;
         } else {
           // Preset stock list fallback
           const foodImages: Record<string, string> = {
@@ -398,7 +398,7 @@ app.post('/api/generate-menu', upload.single('image'), (req, res) => {
         }
       } else if (result.image_url) {
         const localPath = path.join(process.cwd(), 'public', result.image_url);
-        const localUrl = `http://localhost:${port}${result.image_url}`;
+        const localUrl = result.image_url;
         if (fs.existsSync(localPath)) {
           const destination = `generated/${Date.now()}-menu-dish.jpg`;
           try {
@@ -504,8 +504,8 @@ app.post('/api/export-mp4', async (req, res) => {
           try {
             await saveToFirestore('videos', {
               filename: result.filename,
-              publicUrl: publicUrl,
-              localUrl: `http://localhost:${port}/videos/${result.filename}`,
+              publicUrl: publicUrl || `/videos/${result.filename}`,
+              localUrl: `/videos/${result.filename}`,
             });
           } catch (dbErr) {
             console.error(`[VIDEO] Failed to save video meta to Firestore:`, dbErr);
@@ -513,7 +513,7 @@ app.post('/api/export-mp4', async (req, res) => {
 
           res.json({ 
             success: true, 
-            mp4_url: `http://localhost:${port}/videos/${result.filename}`,
+            mp4_url: `/videos/${result.filename}`,
             publicUrl: publicUrl
           });
         } else {

@@ -334,6 +334,7 @@ function TimelineStage({ composition, currentTime }: { composition: VideoComposi
               .glass-card p { margin: 5px 0; font-size: 20px; color: rgba(255,255,255,0.8); }
             </style>
             <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
           </head>
           <body>
             ${composition.html}
