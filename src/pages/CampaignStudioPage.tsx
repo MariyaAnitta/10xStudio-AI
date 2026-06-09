@@ -136,25 +136,22 @@ export default function CampaignStudioPage() {
       if (activeDish.description) setDescription(activeDish.description);
       if (activeDish.price) setPrice(activeDish.price);
       
+      const fetchViaProxy = (externalUrl: string) => {
+        const proxyUrl = `/api/proxy-image?url=${encodeURIComponent(externalUrl)}`;
+        setImagePreview(proxyUrl);
+        fetch(proxyUrl)
+          .then(res => res.blob())
+          .then(blob => {
+            const file = new File([blob], "campaign_dish.jpeg", { type: blob.type || "image/jpeg" });
+            setImageFile(file);
+          })
+          .catch(err => console.error("Failed to load image via proxy in CampaignStudio:", err));
+      };
+
       if (activeDish.processedImageUrl) {
-        setImagePreview(activeDish.processedImageUrl);
-        // Pre-fetch processed image to convert it into a File object for multipart form uploading
-        fetch(activeDish.processedImageUrl)
-          .then(res => res.blob())
-          .then(blob => {
-            const file = new File([blob], "campaign_dish.jpeg", { type: blob.type || "image/jpeg" });
-            setImageFile(file);
-          })
-          .catch(err => console.error("Failed to load processed image in CampaignStudio:", err));
+        fetchViaProxy(activeDish.processedImageUrl);
       } else if (activeDish.rawImageUrl) {
-        setImagePreview(activeDish.rawImageUrl);
-        fetch(activeDish.rawImageUrl)
-          .then(res => res.blob())
-          .then(blob => {
-            const file = new File([blob], "campaign_dish.jpeg", { type: blob.type || "image/jpeg" });
-            setImageFile(file);
-          })
-          .catch(err => console.error("Failed to load raw image in CampaignStudio:", err));
+        fetchViaProxy(activeDish.rawImageUrl);
       }
     }
   }, [activeDish]);
