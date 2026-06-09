@@ -777,34 +777,6 @@ export default function CampaignStudioPage() {
     }
 
     // Layout 4: Dish Promo / New Launch / Default (Magazine-style inner box layout)
-    if (aspectRatio === '1.91:1') {
-      return (
-        <div className="w-full h-full relative overflow-hidden group select-none flex" style={{ backgroundColor: '#111', containerType: 'inline-size' }}>
-          <div className="w-[50%] h-full relative">
-            <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: `url(${bgUrl})` }} />
-            <div className="absolute inset-0 bg-gradient-to-r from-transparent to-[#111]" />
-          </div>
-          <div className="w-[50%] h-full flex flex-col justify-center px-[4cqw] py-[4cqw] z-10">
-             <span className="font-black uppercase tracking-[0.3em] text-white/50 mb-[1.5cqw] truncate" style={{ fontSize: '1.8cqw' }}>
-              {brandKit.restaurantName}
-             </span>
-             <h2 className="font-black uppercase leading-[1.1] mb-[2cqw] text-white overflow-hidden" style={{ fontSize: '5.5cqw', wordBreak: 'break-word', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' as any }}>
-              {taglineText || dishName}
-             </h2>
-             <p className="font-bold text-white/70 leading-snug uppercase tracking-widest mb-[4cqw] line-clamp-2 overflow-hidden" style={{ fontSize: '2cqw' }}>
-               {description}
-             </p>
-             <div className="bg-[#FDFBF7] text-black font-black rounded-full uppercase tracking-widest text-center shadow-sm w-fit" style={{ fontSize: '1.8cqw', padding: '1.5cqw 3cqw' }}>
-               ORDER NOW • ₹{displayPrice}
-             </div>
-             <div className="mt-auto flex justify-between gap-[2cqw] w-full pt-[2cqw]">
-               <span className="font-bold uppercase tracking-[0.2em] text-white/40 truncate" style={{ fontSize: '1.5cqw' }}>{footerWeb}</span>
-               <span className="font-bold uppercase tracking-[0.2em] text-white/40 truncate" style={{ fontSize: '1.5cqw' }}>{footerPhone}</span>
-             </div>
-          </div>
-        </div>
-      );
-    }
 
     if (aspectRatio === '9:16' || aspectRatio === '9:16_reel') {
       return (
