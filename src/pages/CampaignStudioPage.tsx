@@ -606,43 +606,43 @@ export default function CampaignStudioPage() {
     // Layout 1: Festival / Seasonal (Elegant, centered, dark/gold, text at bottom)
     if (selectedCampaign === 'Festival' || selectedCampaign === 'Seasonal') {
       return (
-        <div className="w-full h-full relative overflow-hidden group select-none flex flex-col justify-between items-center" style={{ backgroundColor: '#0f0f11' }}>
+        <div className="w-full h-full relative overflow-hidden group select-none flex flex-col justify-between items-center" style={{ backgroundColor: '#0f0f11', containerType: 'inline-size' }}>
           <div className="absolute inset-0 bg-cover bg-center transition-all duration-1000 group-hover:scale-110 opacity-90" style={{ backgroundImage: `url(${bgUrl})` }} />
           {/* Rich Vignette */}
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,rgba(0,0,0,0.8)_100%)]" />
           <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-transparent to-black/95" />
           
           {/* Elegant top border accent */}
-          <div className="absolute top-4 left-4 right-4 h-full border border-white/10 rounded-lg pointer-events-none" />
-          <div className="absolute top-6 left-1/2 -translate-x-1/2 w-24 h-px" style={{ backgroundColor: accentThemeColor }} />
+          <div className="absolute top-[3cqw] left-[3cqw] right-[3cqw] h-[95%] border border-white/10 rounded-lg pointer-events-none" />
+          <div className="absolute top-[4.5cqw] left-1/2 -translate-x-1/2 w-[20cqw] h-[0.2cqw]" style={{ backgroundColor: accentThemeColor }} />
           
-          <div className="z-10 w-full pt-8 flex flex-col items-center">
-             <div className="text-[10px] uppercase tracking-[0.3em] mb-3 font-semibold" style={{ color: accentThemeColor }}>You're Invited</div>
-             <h2 className="text-4xl font-serif font-black text-white drop-shadow-2xl leading-tight text-center px-4" style={{ textShadow: `0 4px 20px ${accentThemeColor}40` }}>
+          <div className="z-10 w-full pt-[8cqw] flex flex-col items-center">
+             <div className="uppercase tracking-[0.3em] font-semibold mb-[2cqw]" style={{ color: accentThemeColor, fontSize: '2.5cqw' }}>You're Invited</div>
+             <h2 className="font-serif font-black text-white drop-shadow-2xl leading-tight text-center px-[4cqw]" style={{ textShadow: `0 4px 20px ${accentThemeColor}40`, fontSize: '8cqw' }}>
                {taglineText || 'Taste of the Season'}
              </h2>
           </div>
           
-          <div className="z-10 w-full px-6 flex flex-col items-center text-center pb-8 mt-auto">
-            <div className="w-full relative py-5 flex flex-col items-center justify-center">
+          <div className="z-10 w-full px-[5cqw] flex flex-col items-center text-center pb-[5cqw] mt-auto">
+            <div className="w-full relative py-[4cqw] flex flex-col items-center justify-center">
               {/* Decorative corners */}
-              <div className="absolute top-0 left-0 w-3 h-3 border-t border-l" style={{ borderColor: accentThemeColor }} />
-              <div className="absolute top-0 right-0 w-3 h-3 border-t border-r" style={{ borderColor: accentThemeColor }} />
-              <div className="absolute bottom-0 left-0 w-3 h-3 border-b border-l" style={{ borderColor: accentThemeColor }} />
-              <div className="absolute bottom-0 right-0 w-3 h-3 border-b border-r" style={{ borderColor: accentThemeColor }} />
+              <div className="absolute top-0 left-0 w-[3cqw] h-[3cqw] border-t border-l" style={{ borderColor: accentThemeColor }} />
+              <div className="absolute top-0 right-0 w-[3cqw] h-[3cqw] border-t border-r" style={{ borderColor: accentThemeColor }} />
+              <div className="absolute bottom-0 left-0 w-[3cqw] h-[3cqw] border-b border-l" style={{ borderColor: accentThemeColor }} />
+              <div className="absolute bottom-0 right-0 w-[3cqw] h-[3cqw] border-b border-r" style={{ borderColor: accentThemeColor }} />
               
-              <div className="text-xl font-bold text-white uppercase tracking-widest leading-none mb-2">{dishName}</div>
-              <div className="text-[9px] text-white/60 max-w-[80%] leading-relaxed font-light">{description}</div>
-              <div className="mt-3 px-4 py-1.5 rounded-full border border-white/20 bg-black/40 text-lg font-serif italic" style={{ color: accentThemeColor }}>
+              <div className="font-bold text-white uppercase tracking-widest leading-none mb-[2cqw]" style={{ fontSize: '6cqw' }}>{dishName}</div>
+              <div className="text-white/60 max-w-[85%] leading-relaxed font-light" style={{ fontSize: '2.5cqw' }}>{description}</div>
+              <div className="mt-[3cqw] px-[4cqw] py-[1.5cqw] rounded-full border border-white/20 bg-black/40 font-serif italic" style={{ color: accentThemeColor, fontSize: '5cqw' }}>
                 ₹{displayPrice}
               </div>
             </div>
             
-            <div className="mt-5 flex flex-col items-center text-[7px] text-white/50 tracking-widest uppercase font-medium">
-              <span className="mb-1.5" style={{ color: accentThemeColor }}>Bring out your festive spirit</span>
-              <div className="flex gap-3 items-center">
+            <div className="mt-[4cqw] flex flex-col items-center text-white/50 tracking-widest uppercase font-medium" style={{ fontSize: '2cqw' }}>
+              <span className="mb-[1cqw]" style={{ color: accentThemeColor }}>Bring out your festive spirit</span>
+              <div className="flex gap-[2cqw] items-center">
                 <span>{footerPhone}</span> 
-                <span className="w-1 h-1 rounded-full bg-white/20" /> 
+                <span className="w-[0.5cqw] h-[0.5cqw] rounded-full bg-white/20" /> 
                 <span>{footerWeb}</span>
               </div>
             </div>
