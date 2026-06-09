@@ -236,6 +236,25 @@ app2.use("/uploads", express.static(path3.join(process.cwd(), "public", "uploads
 app2.use("/videos", express.static(path3.join(process.cwd(), "localvideos")));
 var clientDist = path3.join(process.cwd(), "dist");
 app2.use(express.static(clientDist));
+
+// /api/proxy-image?url=... — Proxy to bypass CORS on GCS signed URLs
+app2.get("/api/proxy-image", async (req, res) => {
+  const imageUrl = req.query.url;
+  if (!imageUrl) {
+    return res.status(400).json({ error: "Missing url query parameter" });
+  }
+  try {
+    const imgRes = await axios.get(imageUrl, { responseType: "stream" });
+    const contentType = imgRes.headers["content-type"] || "image/jpeg";
+    res.setHeader("Content-Type", contentType);
+    res.setHeader("Cache-Control", "public, max-age=3600");
+    imgRes.data.pipe(res);
+  } catch (err) {
+    console.error("[proxy-image] Error:", err.message);
+    res.status(500).json({ error: "Proxy failed" });
+  }
+});
+
 app2.use((req, res, next) => {
   const start = Date.now();
   const timeStr = (/* @__PURE__ */ new Date()).toLocaleTimeString();

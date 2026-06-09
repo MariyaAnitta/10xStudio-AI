@@ -83,20 +83,21 @@ export default function VisualIntelligence() {
         revenue: activeDish.price ? `₹${activeDish.price}` : prev.revenue,
       }));
       if (activeDish.processedImageUrl) {
-        setImage(activeDish.processedImageUrl);
-        // Attempt to pre-fetch the processed image to create imageFile for the analyzer
-        // If it fails (e.g. CORS on signed URL), the backend will fetch the imageUrl directly.
-        fetch(activeDish.processedImageUrl)
+        // Route through our proxy to avoid CORS issues with GCS signed URLs
+        const proxyUrl = `/api/proxy-image?url=${encodeURIComponent(activeDish.processedImageUrl)}`;
+        setImage(proxyUrl);
+        fetch(proxyUrl)
           .then(res => res.blob())
           .then(blob => {
             const file = new File([blob], "active_dish.jpeg", { type: blob.type || "image/jpeg" });
             setImageFile(file);
           })
           .catch(err => {
-            console.log("Using image URL directly (CORS prevents local blob creation).");
+            console.log("Proxy fetch failed, will use URL directly:", err);
             setImageFile(null);
           });
       }
+
 
     }
   }, [activeDish]);

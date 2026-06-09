@@ -174,28 +174,24 @@ export default function MenuStudio() {
       if (activeDish.name) setDishName(activeDish.name);
       if (activeDish.description) setDescription(activeDish.description);
       if (activeDish.price) setPrice(activeDish.price);
-      
+
+      const fetchViaProxy = (externalUrl: string) => {
+        const proxyUrl = `/api/proxy-image?url=${encodeURIComponent(externalUrl)}`;
+        setUploadedImage(proxyUrl);
+        setMode('upload');
+        fetch(proxyUrl)
+          .then(res => res.blob())
+          .then(blob => {
+            const file = new File([blob], "dish_image.jpeg", { type: blob.type || "image/jpeg" });
+            setUploadedFile(file);
+          })
+          .catch(err => console.error("Failed to load image via proxy:", err));
+      };
+
       if (activeDish.processedImageUrl) {
-        setUploadedImage(activeDish.processedImageUrl);
-        setMode('upload');
-        // Fetch the image to create a File object so it can be sent to the backend
-        fetch(activeDish.processedImageUrl)
-          .then(res => res.blob())
-          .then(blob => {
-            const file = new File([blob], "dish_image.jpeg", { type: blob.type || "image/jpeg" });
-            setUploadedFile(file);
-          })
-          .catch(err => console.error("Failed to load processed image in MenuStudio:", err));
+        fetchViaProxy(activeDish.processedImageUrl);
       } else if (activeDish.rawImageUrl) {
-        setUploadedImage(activeDish.rawImageUrl);
-        setMode('upload');
-        fetch(activeDish.rawImageUrl)
-          .then(res => res.blob())
-          .then(blob => {
-            const file = new File([blob], "dish_image.jpeg", { type: blob.type || "image/jpeg" });
-            setUploadedFile(file);
-          })
-          .catch(err => console.error("Failed to load raw image in MenuStudio:", err));
+        fetchViaProxy(activeDish.rawImageUrl);
       }
     }
   }, [activeDish]);

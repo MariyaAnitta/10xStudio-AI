@@ -59,7 +59,34 @@ app.use('/videos', express.static(path.join(process.cwd(), 'localvideos')));
 const clientDist = path.join(process.cwd(), 'dist');
 app.use(express.static(clientDist));
 
+// ─────────────────────────────────────────────────────────
+// /api/proxy-image?url=... — Server-side image proxy to
+// bypass CORS restrictions on GCS signed URLs.
+// The browser never touches GCS directly; we fetch it here.
+// ─────────────────────────────────────────────────────────
+app.get('/api/proxy-image', async (req, res) => {
+  const imageUrl = req.query.url as string;
+  if (!imageUrl) {
+    return res.status(400).json({ error: 'Missing url query parameter' });
+  }
+  try {
+    const fetch = (await import('node-fetch')).default;
+    const upstream = await fetch(imageUrl);
+    if (!upstream.ok) {
+      return res.status(upstream.status).json({ error: 'Upstream fetch failed' });
+    }
+    const contentType = upstream.headers.get('content-type') || 'image/jpeg';
+    res.setHeader('Content-Type', contentType);
+    res.setHeader('Cache-Control', 'public, max-age=3600');
+    upstream.body?.pipe(res);
+  } catch (err: any) {
+    console.error('[proxy-image] Error:', err.message);
+    res.status(500).json({ error: 'Proxy failed' });
+  }
+});
+
 app.use((req, res, next) => {
+
   const start = Date.now();
   const timeStr = new Date().toLocaleTimeString();
   console.log(`\n[${timeStr}] 🌐 REQUEST: ${req.method} ${req.originalUrl}`);
