@@ -715,58 +715,58 @@ export default function CampaignStudioPage() {
     // Layout 3: Combo Offer (Premium floating glass card)
     if (selectedCampaign === 'Combo offer') {
       return (
-        <div className="w-full h-full relative overflow-hidden group select-none flex flex-col justify-end" style={{ backgroundColor: '#000' }}>
+        <div className="w-full h-full relative overflow-hidden group select-none flex flex-col justify-end" style={{ backgroundColor: '#000', containerType: 'inline-size' }}>
           <div className="absolute inset-0 bg-cover bg-center transition-all duration-1000 group-hover:scale-110" style={{ backgroundImage: `url(${bgUrl})` }} />
           {/* Smooth gradient from bottom to make text legible without killing the photo */}
           <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-transparent opacity-90" />
           
-          <div className="absolute top-4 left-0 w-full text-center z-10">
-            <span className="bg-black/60 border border-white/10 text-white px-4 py-1 text-[9px] font-black uppercase tracking-[0.2em] rounded-full shadow-lg">
+          <div className="absolute top-[4cqw] left-0 w-full text-center z-10">
+            <span className="bg-black/60 border border-white/10 text-white px-[4cqw] py-[1cqw] font-black uppercase tracking-[0.2em] rounded-full shadow-lg" style={{ fontSize: '2.5cqw' }}>
               {brandKit.restaurantName}
             </span>
           </div>
           
-          <div className="z-10 w-full p-4 pb-5 flex flex-col items-center">
-            <div className="inline-block px-3 py-1 bg-gradient-to-r from-red-600 to-red-500 text-white text-[9px] font-black uppercase tracking-[0.2em] rounded-t-lg shadow-[0_-4px_15px_rgba(220,38,38,0.5)] z-20 relative translate-y-1">
+          <div className="z-10 w-full p-[4cqw] pb-[5cqw] flex flex-col items-center">
+            <div className="inline-block px-[3cqw] py-[1cqw] bg-gradient-to-r from-red-600 to-red-500 text-white font-black uppercase tracking-[0.2em] rounded-t-lg shadow-[0_-4px_15px_rgba(220,38,38,0.5)] z-20 relative translate-y-1" style={{ fontSize: '2.5cqw' }}>
               {taglineText || 'SUPER COMBO'}
             </div>
             
             {/* Main Info Card */}
-            <div className="w-full bg-black/70 border border-white/10 rounded-2xl p-4 shadow-2xl relative z-10">
-              <div className="flex gap-3 mb-4">
+            <div className="w-full bg-black/70 border border-white/10 rounded-2xl p-[4cqw] shadow-2xl relative z-10">
+              <div className="flex gap-[3cqw] mb-[4cqw]">
                 {/* Item 1 */}
                 <div className="flex-1 text-center">
-                  <div className="text-[11px] font-black uppercase text-white leading-tight h-7 flex items-center justify-center drop-shadow">{dishName}</div>
-                  <div className="text-[7px] text-white/50 italic h-4 line-clamp-1 mt-1">{description}</div>
-                  <div className="text-[9px] font-bold text-white/40 line-through mt-1">₹{itemPrice1}</div>
+                  <div className="font-black uppercase text-white leading-tight h-[8cqw] flex items-center justify-center drop-shadow" style={{ fontSize: '3.5cqw' }}>{dishName}</div>
+                  <div className="text-white/50 italic h-[5cqw] line-clamp-1 mt-[1cqw]" style={{ fontSize: '2cqw' }}>{description}</div>
+                  <div className="font-bold text-white/40 line-through mt-[1cqw]" style={{ fontSize: '2.5cqw' }}>₹{itemPrice1}</div>
                 </div>
                 
                 {/* Divider */}
                 <div className="w-px bg-white/10 relative">
-                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-4 h-4 rounded-full bg-white/10 flex items-center justify-center text-[6px] text-white/50 font-bold border border-white/5">
+                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[4cqw] h-[4cqw] rounded-full bg-white/10 flex items-center justify-center text-white/50 font-bold border border-white/5" style={{ fontSize: '2cqw' }}>
                     +
                   </div>
                 </div>
                 
                 {/* Item 2 */}
                 <div className="flex-1 text-center">
-                  <div className="text-[11px] font-black uppercase text-white leading-tight h-7 flex items-center justify-center drop-shadow">{dishName2}</div>
-                  <div className="text-[7px] text-white/50 italic h-4 line-clamp-1 mt-1">{description2}</div>
-                  <div className="text-[9px] font-bold text-white/40 line-through mt-1">₹{itemPrice2}</div>
+                  <div className="font-black uppercase text-white leading-tight h-[8cqw] flex items-center justify-center drop-shadow" style={{ fontSize: '3.5cqw' }}>{dishName2}</div>
+                  <div className="text-white/50 italic h-[5cqw] line-clamp-1 mt-[1cqw]" style={{ fontSize: '2cqw' }}>{description2}</div>
+                  <div className="font-bold text-white/40 line-through mt-[1cqw]" style={{ fontSize: '2.5cqw' }}>₹{itemPrice2}</div>
                 </div>
               </div>
               
-              <div className="w-full h-px bg-gradient-to-r from-transparent via-white/20 to-transparent mb-3" />
+              <div className="w-full h-px bg-gradient-to-r from-transparent via-white/20 to-transparent mb-[3cqw]" />
               
-              <div className="flex justify-between items-center px-1">
-                <div className="text-[8px] uppercase tracking-[0.1em] text-white/60 font-bold">Combo Price</div>
-                <div className="text-3xl font-black drop-shadow-[0_2px_10px_rgba(250,204,21,0.3)]" style={{ color: accentThemeColor }}>₹{displayPrice}</div>
+              <div className="flex justify-between items-center px-[1cqw]">
+                <div className="uppercase tracking-[0.1em] text-white/60 font-bold" style={{ fontSize: '2.5cqw' }}>Combo Price</div>
+                <div className="font-black drop-shadow-[0_2px_10px_rgba(250,204,21,0.3)]" style={{ color: accentThemeColor, fontSize: '8cqw' }}>₹{displayPrice}</div>
               </div>
             </div>
             
-            <div className="flex w-full justify-between mt-4 text-[6px] text-white/50 font-medium uppercase tracking-widest px-2">
-              <div className="flex items-center gap-1.5"><span>{footerPhone}</span></div>
-              <div className="flex items-center gap-1.5"><span>{footerWeb}</span></div>
+            <div className="flex w-full justify-between mt-[4cqw] text-white/50 font-medium uppercase tracking-widest px-[2cqw]" style={{ fontSize: '2cqw' }}>
+              <div className="flex items-center gap-[1.5cqw]"><span>{footerPhone}</span></div>
+              <div className="flex items-center gap-[1.5cqw]"><span>{footerWeb}</span></div>
             </div>
           </div>
         </div>
