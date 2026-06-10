@@ -48,7 +48,8 @@ def generate_menu_details(dish_name, category, description, brand_style):
     2. Provide a health label (e.g., "Excellent", "Good", "Balanced", "Indulgent", "Treat").
     3. Write a brief nutritional justification (15-20 words max) focusing on the positive aspects of the ingredients (e.g., protein in chicken, energy from carbs).
     4. Write a compelling culinary "Story" (25-35 words max) in the "{brand_style}" brand tone that makes it sound exquisite.
-    5. Generate a super-detailed, professional food photography prompt for generating an image of this dish.
+    5. Extract a clean, precise list of actual, tangible culinary ingredients from the description/dish name. Filter out cooking styles, techniques, textures, temperatures, adjectives, and descriptive phrases (e.g., filter out 'slow-cooked on dum', 'aromatic', 'spiced', 'glistening', 'tender'). We only want physical items like 'Basmati Rice', 'Chicken', 'Caramelized Onions', 'Saffron', etc. Return a maximum of 6 elements as a list of strings.
+    6. Generate a super-detailed, professional food photography prompt for generating an image of this dish.
     
     Return ONLY a valid JSON object matching this schema:
     {{
@@ -56,6 +57,7 @@ def generate_menu_details(dish_name, category, description, brand_style):
       "health_label": "string",
       "health_detail": "string",
       "story": "string",
+      "ingredients": ["string"],
       "image_prompt": "string"
     }}
     """
@@ -194,6 +196,7 @@ def main():
             "health_score": details.get("health_score", 7.0),
             "health_label": details.get("health_label", "Moderate"),
             "health_detail": details.get("health_detail", ""),
+            "ingredients": details.get("ingredients", []),
             "image_url": image_url
         }
         

@@ -27,42 +27,42 @@ const navItems = [
     path: '/visual-creation',
     label: 'Visual Creation',
     icon: Sparkles,
-    badge: 'M1',
+    badge: '',
     description: 'AI food photography engine',
   },
   {
     path: '/visual-intelligence',
     label: 'Visual Intelligence',
     icon: BarChart3,
-    badge: 'M2',
+    badge: '',
     description: 'Visual score + business metrics',
   },
   {
     path: '/video-generation',
     label: 'Video Generation',
     icon: Video,
-    badge: 'M3',
+    badge: '',
     description: 'Prompt-to-video engine',
   },
   {
     path: '/menu-studio',
     label: 'Media & Menu Studio',
     icon: Layers,
-    badge: 'M4',
+    badge: '',
     description: 'AI Menu Card Generator',
   },
   {
     path: '/campaign-studio',
     label: 'AI Campaign Studio',
     icon: Zap,
-    badge: 'M5',
+    badge: '',
     description: 'Social Media Creative Engine',
   },
   {
     path: '/db-inspector',
     label: 'Database Inspector',
     icon: Database,
-    badge: 'Live',
+    badge: '',
     description: 'Verify GCS & Firestore saves',
   },
 ];
@@ -140,7 +140,7 @@ export default function Layout({ children }: LayoutProps) {
                     {item.description}
                   </div>
                 </div>
-                <span className="nav-badge">{item.badge}</span>
+                {item.badge && <span className="nav-badge">{item.badge}</span>}
               </NavLink>
             );
           })}
@@ -181,12 +181,6 @@ export default function Layout({ children }: LayoutProps) {
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
                 <span style={{ fontSize: 9, color: '#9E8FC8', fontWeight: 700, letterSpacing: '0.05em', textTransform: 'uppercase' }}>Active Brand</span>
                 <span style={{ fontSize: 12, fontWeight: 600, color: '#374151' }}>{restaurantName}</span>
-              </div>
-            )}
-            {activeDish && (
-              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', borderLeft: '1px solid #E5E7EB', paddingLeft: 24 }}>
-                <span style={{ fontSize: 9, color: '#9E8FC8', fontWeight: 700, letterSpacing: '0.05em', textTransform: 'uppercase' }}>Active Dish</span>
-                <span style={{ fontSize: 12, fontWeight: 600, color: '#374151' }}>{activeDish.name}</span>
               </div>
             )}
           </div>

@@ -128,6 +128,7 @@ export default function MenuStudio() {
   // AI-Generated State
   const [aiStory, setAiStory] = useState<string | null>(null);
   const [aiHealthData, setAiHealthData] = useState<{ score: number; label: string; detail: string } | null>(null);
+  const [aiIngredients, setAiIngredients] = useState<string[] | null>(null);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const menuCardRef = useRef<HTMLDivElement>(null);
@@ -217,6 +218,7 @@ export default function MenuStudio() {
   const handleGenerate = async () => {
     setIsGenerating(true);
     setResultImage(null);
+    setAiIngredients(null);
     setGenerationStage(0);
 
     // Multi-stage slow animation loader
@@ -255,6 +257,9 @@ export default function MenuStudio() {
           label: data.health_label,
           detail: data.health_detail
         });
+        if (data.ingredients) {
+          setAiIngredients(data.ingredients);
+        }
         if (data.image_url) {
           setResultImage(data.image_url);
         } else if (mode === 'upload' && uploadedImage) {
@@ -290,6 +295,7 @@ export default function MenuStudio() {
         }
         setAiStory(generateStory(dishName, description, category, brandStyle));
         setAiHealthData(calculateHealthScore(dishName, description, category));
+        setAiIngredients(null);
       }, 500);
     } finally {
       clearInterval(interval);
@@ -299,12 +305,15 @@ export default function MenuStudio() {
 
   // Parsed list of ingredients
   const ingredientsList = useMemo(() => {
+    if (aiIngredients && aiIngredients.length > 0) {
+      return aiIngredients;
+    }
     return description
       .split(/,|\band\b|\bwith\b|\btopped\b|\&/i)
       .map(s => s.trim().replace(/^with\s+/i, '').replace(/^and\s+/i, '').replace(/\.$/, ''))
       .filter(s => s.length > 2 && s.length <= 25)
       .slice(0, 6);
-  }, [description]);
+  }, [description, aiIngredients]);
 
   // Combined fallback & real states
   const finalStory = aiStory || generateStory(dishName, description, category, brandStyle);

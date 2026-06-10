@@ -429,6 +429,18 @@ export default function CampaignStudioPage() {
   };
 
   const handleScheduleCampaign = async () => {
+    const checkedPlatforms = platformsState.filter(p => p.checked);
+    if (checkedPlatforms.length === 0) {
+      alert('Please select at least one platform to schedule.');
+      return;
+    }
+
+    const hasMissingTime = checkedPlatforms.some(p => !p.scheduleTime);
+    if (hasMissingTime) {
+      alert('Please select a valid date and time for all scheduled platforms.');
+      return;
+    }
+
     setIsScheduling(true);
     try {
       const formData = new FormData();
@@ -454,7 +466,7 @@ export default function CampaignStudioPage() {
       formData.append('dishName', dishName);
       
       // Convert scheduleTime to UTC ISO string so server reads it correctly regardless of timezone
-      const selected = platformsState.filter(p => p.checked).map(p => ({
+      const selected = checkedPlatforms.map(p => ({
         ...p,
         scheduleTime: p.scheduleTime ? new Date(p.scheduleTime).toISOString() : ''
       }));
@@ -479,6 +491,12 @@ export default function CampaignStudioPage() {
   };
 
   const handlePublishNow = async () => {
+    const checkedPlatforms = platformsState.filter(p => p.checked);
+    if (checkedPlatforms.length === 0) {
+      alert('Please select at least one platform to publish.');
+      return;
+    }
+
     setIsPublishing(true);
     try {
       const formData = new FormData();
