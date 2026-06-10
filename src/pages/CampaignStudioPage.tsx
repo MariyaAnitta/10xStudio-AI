@@ -578,7 +578,7 @@ export default function CampaignStudioPage() {
         <div className="w-full h-full relative overflow-hidden group select-none flex bg-black" style={{ containerType: 'inline-size' }}>
           {/* Background Image */}
           <div className="absolute inset-0 bg-cover bg-center transition-all duration-700 group-hover:scale-105" style={{ backgroundImage: `url(${bgUrl})` }}>
-            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-black/50 to-black/95" />
+            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-black/30 to-black/90" />
           </div>
 
           {/* Right-side content panel — strictly contained, no overflow */}
@@ -625,10 +625,10 @@ export default function CampaignStudioPage() {
     if (selectedCampaign === 'Festival' || selectedCampaign === 'Seasonal') {
       return (
         <div className="w-full h-full relative overflow-hidden group select-none flex flex-col justify-between items-center" style={{ backgroundColor: '#0f0f11', containerType: 'inline-size' }}>
-          <div className="absolute inset-0 bg-cover bg-center transition-all duration-1000 group-hover:scale-110 opacity-90" style={{ backgroundImage: `url(${bgUrl})` }} />
+          <div className="absolute inset-0 bg-cover bg-center transition-all duration-1000 group-hover:scale-110 opacity-95" style={{ backgroundImage: `url(${bgUrl})` }} />
           {/* Rich Vignette */}
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,rgba(0,0,0,0.8)_100%)]" />
-          <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-transparent to-black/95" />
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_30%,rgba(0,0,0,0.7)_100%)]" />
+          <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-transparent to-black/90" />
           
           {/* Elegant top border accent */}
           <div className="absolute top-[3cqw] left-[3cqw] right-[3cqw] h-[95%] border border-white/10 rounded-lg pointer-events-none" />
@@ -675,8 +675,8 @@ export default function CampaignStudioPage() {
         <div className="w-full h-full relative overflow-hidden group select-none flex flex-col" style={{ backgroundColor: primaryThemeBg, containerType: 'inline-size' }}>
           {/* Background food photo */}
           <div className="absolute inset-0 bg-cover bg-center transition-all duration-700 group-hover:scale-105" style={{ backgroundImage: `url(${bgUrl})` }} />
-          {/* Strong gradient from bottom so text is always legible */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black via-black/75 to-black/15" />
+          {/* Softer gradient from bottom so food stays bright and text is legible */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent" />
 
           {/* Top bar: brand name LEFT + promo badge RIGHT — in one flex row, no overlap */}
           <div className="absolute top-0 left-0 right-0 z-10 flex items-start justify-between gap-2" style={{ padding: '3cqw' }}>
@@ -736,7 +736,7 @@ export default function CampaignStudioPage() {
         <div className="w-full h-full relative overflow-hidden group select-none flex flex-col justify-end" style={{ backgroundColor: '#000', containerType: 'inline-size' }}>
           <div className="absolute inset-0 bg-cover bg-center transition-all duration-1000 group-hover:scale-110" style={{ backgroundImage: `url(${bgUrl})` }} />
           {/* Smooth gradient from bottom to make text legible without killing the photo */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-transparent opacity-90" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent" />
           
           <div className="absolute top-[4cqw] left-0 w-full text-center z-10">
             <span className="bg-black/60 border border-white/10 text-white px-[4cqw] py-[1cqw] font-black uppercase tracking-[0.2em] rounded-full shadow-lg" style={{ fontSize: '2.5cqw' }}>
