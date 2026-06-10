@@ -105,6 +105,18 @@ export default function VisualIntelligence() {
   useEffect(() => {
     if (auditResults) {
       setData(auditResults);
+      if (auditResults.dish_stats) {
+        const stats = auditResults.dish_stats;
+        setMetrics(prev => ({
+          ...prev,
+          dishName: stats.dish_name || prev.dishName,
+          orders: stats.orders !== undefined ? stats.orders : prev.orders,
+          revenue: stats.revenue || prev.revenue,
+          margin: stats.margin !== undefined ? stats.margin : prev.margin,
+          rating: stats.rating !== undefined ? stats.rating : prev.rating,
+          views: stats.views !== undefined ? stats.views : prev.views,
+        }));
+      }
     }
   }, [auditResults]);
 
