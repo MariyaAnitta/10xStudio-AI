@@ -795,39 +795,41 @@ export default function CampaignStudioPage() {
 
     if (aspectRatio === '9:16' || aspectRatio === '9:16_reel') {
       return (
-        <div className="w-full h-full relative overflow-hidden group select-none flex flex-col items-center bg-black" style={{ containerType: 'inline-size' }}>
+        <div className="w-full h-full relative overflow-hidden group select-none flex flex-col items-center justify-between bg-black" style={{ containerType: 'inline-size', padding: '12cqw 6cqw' }}>
           <div className="absolute inset-0 bg-cover bg-center opacity-40 blur-xl scale-110" style={{ backgroundImage: `url(${bgUrl})` }} />
           <div className="absolute inset-0 bg-black/40" />
 
-          {/* Top Brand Name - Y=250 approx (15% down) */}
-          <div className="z-20 w-full text-center mt-[15cqw] mb-[5cqw] px-[5cqw]">
+          {/* Top Brand Name */}
+          <div className="z-20 w-full text-center px-[2cqw] mb-[2cqw] flex-shrink-0">
             <span className="font-black uppercase tracking-[0.3em] text-white/80 drop-shadow-md truncate block" style={{ fontSize: '4cqw' }}>
               {brandKit.restaurantName}
             </span>
           </div>
 
-          <div className="z-20 w-[85%] bg-[#FDFBF7] rounded-xl flex flex-col items-center pt-[8cqw] pb-[8cqw] px-[6cqw] shadow-2xl relative flex-1 mb-[25cqw]">
-            <h2 className="font-black uppercase leading-[0.9] w-full text-center tracking-tighter mb-[6cqw] overflow-hidden" style={{ color: primaryThemeBg, fontSize: '12cqw', wordBreak: 'break-word', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' as any }}>
+          {/* Center Content Card */}
+          <div className="z-20 w-[90%] bg-[#FDFBF7] rounded-xl flex flex-col items-center justify-center pt-[6cqw] pb-[6cqw] px-[5cqw] shadow-2xl relative flex-1 min-h-0 my-[4cqw]">
+            <h2 className="font-black uppercase leading-[0.9] w-full text-center tracking-tighter mb-[4cqw] overflow-hidden flex-shrink-0" style={{ color: primaryThemeBg, fontSize: '10cqw', wordBreak: 'break-word', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' as any }}>
               {taglineText || dishName}
             </h2>
             
-            <div className="w-[60cqw] h-[60cqw] rounded-full overflow-hidden shadow-2xl mb-[8cqw] relative border-[1cqw] border-white flex-shrink-0">
+            <div className="w-[50cqw] h-[50cqw] rounded-full overflow-hidden shadow-2xl mb-[6cqw] relative border-[0.8cqw] border-white flex-shrink-0">
               <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: `url(${bgUrl})` }} />
             </div>
             
-            <p className="font-bold text-slate-800 leading-snug text-center uppercase tracking-widest px-[2cqw] line-clamp-3 overflow-hidden" style={{ fontSize: '3.5cqw' }}>
+            <p className="font-bold text-slate-800 leading-snug text-center uppercase tracking-widest px-[2cqw] line-clamp-3 overflow-hidden mb-[4cqw]" style={{ fontSize: '3.2cqw' }}>
               {description}
             </p>
 
-            {/* Order Button at the bottom of the card */}
-            <div className="mt-auto w-full border-[0.5cqw] border-black text-black font-black rounded-full uppercase tracking-widest text-center shadow-sm" style={{ fontSize: '3.5cqw', padding: '3cqw 0' }}>
+            {/* Order Button */}
+            <div className="mt-auto w-full border-[0.5cqw] border-black text-black font-black rounded-full uppercase tracking-widest text-center shadow-sm flex-shrink-0" style={{ fontSize: '3.2cqw', padding: '3cqw 0' }}>
               ORDER NOW • ₹{displayPrice}
             </div>
           </div>
           
-          <div className="z-20 absolute bottom-[10cqw] w-full flex justify-between px-[10cqw] text-center gap-[2cqw]">
-            <span className="font-bold uppercase tracking-[0.2em] text-white/70 drop-shadow-sm truncate" style={{ fontSize: '3cqw' }}>{footerWeb}</span>
-            <span className="font-bold uppercase tracking-[0.2em] text-white/70 drop-shadow-sm truncate" style={{ fontSize: '3cqw' }}>{footerPhone}</span>
+          {/* Footer */}
+          <div className="z-20 w-full flex justify-between px-[4cqw] text-center gap-[2cqw] flex-shrink-0">
+            <span className="font-bold uppercase tracking-[0.2em] text-white/70 drop-shadow-sm truncate max-w-[50%]" style={{ fontSize: '3cqw' }}>{footerWeb}</span>
+            <span className="font-bold uppercase tracking-[0.2em] text-white/70 drop-shadow-sm truncate max-w-[50%]" style={{ fontSize: '3cqw' }}>{footerPhone}</span>
           </div>
         </div>
       );
@@ -835,37 +837,40 @@ export default function CampaignStudioPage() {
 
     // Default to 1:1 Square
     return (
-      <div className="w-full h-full relative overflow-hidden group select-none flex flex-col items-center justify-center bg-[#FDFBF7]" style={{ containerType: 'inline-size' }}>
-        <div className="absolute top-[4cqw] w-full text-center flex justify-between px-[6cqw] gap-[2cqw]">
-          <span className="font-black uppercase tracking-[0.3em] text-black/40 truncate" style={{ fontSize: '2.5cqw' }}>
+      <div className="w-full h-full relative overflow-hidden group select-none flex flex-col items-center justify-between bg-[#FDFBF7]" style={{ containerType: 'inline-size', padding: '6cqw 6cqw' }}>
+        {/* Top Header */}
+        <div className="w-full flex justify-between gap-2 z-20 flex-shrink-0">
+          <span className="font-black uppercase tracking-[0.3em] text-black/40 truncate max-w-[50%]" style={{ fontSize: '2.2cqw' }}>
             {brandKit.restaurantName}
           </span>
-          <span className="font-black uppercase tracking-[0.3em] text-black/40 truncate" style={{ fontSize: '2.5cqw' }}>
+          <span className="font-black uppercase tracking-[0.3em] text-black/40 truncate max-w-[50%]" style={{ fontSize: '2.2cqw' }}>
             {taglineText || 'PROMO'}
           </span>
         </div>
 
-        <div className="z-20 w-[85%] flex flex-col items-center text-center mt-[8cqw]">
-          <h2 className="font-black uppercase leading-[0.9] tracking-tighter mb-[4cqw] overflow-hidden" style={{ color: primaryThemeBg, fontSize: '11cqw', wordBreak: 'break-word', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' as any }}>
+        {/* Center Content Card */}
+        <div className="z-20 flex flex-col items-center text-center justify-center flex-grow min-h-0 w-full my-[1cqw]">
+          <h2 className="font-black uppercase leading-[1.0] tracking-tighter mb-[1.5cqw] overflow-hidden flex-shrink-0" style={{ color: primaryThemeBg, fontSize: '6.5cqw', wordBreak: 'break-word', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' as any }}>
             {dishName}
           </h2>
           
-          <div className="w-[50cqw] h-[50cqw] rounded-full overflow-hidden shadow-xl mb-[4cqw] relative border-[1cqw] border-white flex-shrink-0">
+          <div className="w-[32cqw] h-[32cqw] rounded-full overflow-hidden shadow-xl mb-[2cqw] relative border-[0.8cqw] border-white flex-shrink-0">
             <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: `url(${bgUrl})` }} />
           </div>
           
-          <p className="font-bold text-slate-700 leading-snug uppercase tracking-widest mb-[5cqw] px-[4cqw] line-clamp-2 overflow-hidden" style={{ fontSize: '3cqw' }}>
+          <p className="font-bold text-slate-700 leading-snug uppercase tracking-widest mb-[2cqw] px-[4cqw] line-clamp-2 overflow-hidden flex-grow-0" style={{ fontSize: '2.2cqw' }}>
             {description}
           </p>
           
-          <div className="bg-black text-white font-black rounded-full uppercase tracking-widest shadow-lg" style={{ fontSize: '3.5cqw', padding: '2.5cqw 6cqw' }}>
+          <div className="bg-black text-white font-black rounded-full uppercase tracking-widest shadow-lg flex-shrink-0" style={{ fontSize: '2.6cqw', padding: '1.5cqw 4cqw' }}>
             ORDER NOW • ₹{displayPrice}
           </div>
         </div>
         
-        <div className="absolute bottom-[4cqw] w-full flex justify-between px-[6cqw] text-center gap-[2cqw]">
-          <span className="font-bold uppercase tracking-[0.2em] text-black/50 truncate" style={{ fontSize: '2.5cqw' }}>{footerWeb}</span>
-          <span className="font-bold uppercase tracking-[0.2em] text-black/50 truncate" style={{ fontSize: '2.5cqw' }}>{footerPhone}</span>
+        {/* Footer */}
+        <div className="w-full flex justify-between gap-2 z-20 flex-shrink-0">
+          <span className="font-bold uppercase tracking-[0.2em] text-black/50 truncate max-w-[50%]" style={{ fontSize: '2.2cqw' }}>{footerWeb}</span>
+          <span className="font-bold uppercase tracking-[0.2em] text-black/50 truncate max-w-[50%]" style={{ fontSize: '2.2cqw' }}>{footerPhone}</span>
         </div>
       </div>
     );

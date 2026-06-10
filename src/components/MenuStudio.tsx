@@ -320,11 +320,26 @@ export default function MenuStudio() {
   const finalHealth = aiHealthData || calculateHealthScore(dishName, description, category);
   const healthColor = finalHealth.score >= 8.0 ? '#10B981' : finalHealth.score >= 6.5 ? '#F59E0B' : '#EF4444';
 
-  // Dynamic visual style configurations based on selected style
+  // Dynamic visual style configurations based on selected style, adapted to Brand Kit if available
   const activeStyleProfile = useMemo(() => {
+    let profile = {
+      cardBg: '#09090B',
+      cardText: '#F4F4F5',
+      cardBorder: '1px solid rgba(212, 175, 55, 0.25)',
+      cardShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5), inset 0 0 12px rgba(212, 175, 55, 0.05)',
+      accentText: '#FAA000',
+      dividerBg: 'rgba(212, 175, 55, 0.15)',
+      dividerDiamondBorder: 'rgba(212, 175, 55, 0.4)',
+      subtextColor: 'rgba(244, 244, 245, 0.7)',
+      storyColor: 'rgba(244, 244, 245, 0.55)',
+      badgeBg: 'rgba(255, 255, 255, 0.02)',
+      badgeBorder: 'rgba(255, 255, 255, 0.04)',
+      topHeaderLine: '1px solid rgba(255, 255, 255, 0.06)'
+    };
+
     switch (brandStyle) {
       case 'fresh':
-        return {
+        profile = {
           cardBg: '#FAFBF9',
           cardText: '#1E293B',
           cardBorder: '1px solid rgba(16, 185, 129, 0.25)',
@@ -338,8 +353,9 @@ export default function MenuStudio() {
           badgeBorder: 'rgba(16, 185, 129, 0.1)',
           topHeaderLine: '1px solid rgba(16, 185, 129, 0.12)'
         };
+        break;
       case 'bold':
-        return {
+        profile = {
           cardBg: '#120202',
           cardText: '#FDF2F2',
           cardBorder: '1px solid rgba(239, 68, 68, 0.3)',
@@ -353,8 +369,9 @@ export default function MenuStudio() {
           badgeBorder: 'rgba(239, 68, 68, 0.1)',
           topHeaderLine: '1px solid rgba(239, 68, 68, 0.15)'
         };
+        break;
       case 'organic':
-        return {
+        profile = {
           cardBg: '#FAF7F2',
           cardText: '#2D1F10',
           cardBorder: '1px solid rgba(139, 92, 26, 0.2)',
@@ -368,8 +385,9 @@ export default function MenuStudio() {
           badgeBorder: 'rgba(139, 92, 26, 0.1)',
           topHeaderLine: '1px solid rgba(139, 92, 26, 0.12)'
         };
+        break;
       case 'homestyle':
-        return {
+        profile = {
           cardBg: '#FDFBF7',
           cardText: '#3E2723',
           cardBorder: '1px solid rgba(120, 83, 72, 0.25)',
@@ -383,8 +401,9 @@ export default function MenuStudio() {
           badgeBorder: 'rgba(120, 83, 72, 0.1)',
           topHeaderLine: '1px solid rgba(120, 83, 72, 0.12)'
         };
+        break;
       case 'qsr':
-        return {
+        profile = {
           cardBg: '#FFFFFF',
           cardText: '#1F2937',
           cardBorder: '1px solid rgba(245, 158, 11, 0.3)',
@@ -398,9 +417,10 @@ export default function MenuStudio() {
           badgeBorder: 'rgba(245, 158, 11, 0.1)',
           topHeaderLine: '1px solid rgba(245, 158, 11, 0.15)'
         };
+        break;
       case 'luxury':
       default:
-        return {
+        profile = {
           cardBg: '#09090B',
           cardText: '#F4F4F5',
           cardBorder: '1px solid rgba(212, 175, 55, 0.25)',
@@ -414,8 +434,67 @@ export default function MenuStudio() {
           badgeBorder: 'rgba(255, 255, 255, 0.04)',
           topHeaderLine: '1px solid rgba(255, 255, 255, 0.06)'
         };
+        break;
     }
-  }, [brandStyle]);
+
+    if (brandKit) {
+      const bkPrimary = brandKit.colors.find(c => c.label === 'Primary')?.hex;
+      const bkBg = brandKit.colors.find(c => c.label === 'Background')?.hex;
+      const bkText = brandKit.colors.find(c => c.label === 'Text')?.hex;
+      const bkAccent = brandKit.colors.find(c => c.label === 'Accent')?.hex;
+
+      if (bkBg) profile.cardBg = bkBg;
+      if (bkText) {
+        profile.cardText = bkText;
+        profile.subtextColor = bkText + 'CC';
+        profile.storyColor = bkText + '99';
+      }
+      if (bkPrimary) {
+        profile.topHeaderLine = `1px solid ${bkPrimary}26`;
+        profile.dividerBg = `${bkPrimary}33`;
+      }
+      if (bkAccent) {
+        profile.accentText = bkAccent;
+        profile.dividerDiamondBorder = bkAccent;
+      } else if (bkPrimary) {
+        profile.accentText = bkPrimary;
+        profile.dividerDiamondBorder = bkPrimary;
+      }
+
+      const getLuminance = (hex: string) => {
+        const cleaned = hex.replace('#', '');
+        const r = parseInt(cleaned.substring(0, 2), 16);
+        const g = parseInt(cleaned.substring(2, 4), 16);
+        const b = parseInt(cleaned.substring(4, 6), 16);
+        const a = [r, g, b].map(v => {
+          v /= 255;
+          return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
+        });
+        return a[0] * 0.2126 + a[1] * 0.7152 + a[2] * 0.0722;
+      };
+
+      const adjustContrast = (textHex: string, bgHex: string) => {
+        try {
+          const textLum = getLuminance(textHex);
+          const bgLum = getLuminance(bgHex);
+          const contrast = (Math.max(textLum, bgLum) + 0.05) / (Math.min(textLum, bgLum) + 0.05);
+          if (contrast < 3.0) {
+            return bgLum < 0.5 ? '#FFFFFF' : '#09090B';
+          }
+          return textHex;
+        } catch (e) {
+          return textHex;
+        }
+      };
+
+      profile.cardText = adjustContrast(profile.cardText, profile.cardBg);
+      profile.accentText = adjustContrast(profile.accentText, profile.cardBg);
+      profile.subtextColor = adjustContrast(profile.subtextColor, profile.cardBg);
+      profile.storyColor = adjustContrast(profile.storyColor, profile.cardBg);
+    }
+
+    return profile;
+  }, [brandStyle, brandKit]);
 
   return (
     <div className="max-w-7xl mx-auto p-6 py-12">
@@ -689,7 +768,7 @@ export default function MenuStudio() {
                     <div style={{ 
                       fontSize: 20, 
                       fontWeight: 800, 
-                      color: primaryColor,
+                      color: activeStyleProfile.accentText,
                       fontFamily,
                       whiteSpace: 'nowrap',
                     }}>
