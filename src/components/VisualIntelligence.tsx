@@ -60,11 +60,11 @@ export default function VisualIntelligence() {
   // Simulation State
   const [metrics, setMetrics] = useState({
     dishName: "Classic Burger",
-    orders: 0,
+    orders: "0",
     revenue: "₹0",
-    margin: 0,
-    rating: 0,
-    views: 0,
+    margin: "0.0",
+    rating: "0.0",
+    views: "0",
     avgOrders: 1000,
     avgViews: 5000
   });
@@ -110,11 +110,11 @@ export default function VisualIntelligence() {
         setMetrics(prev => ({
           ...prev,
           dishName: stats.dish_name || prev.dishName,
-          orders: stats.orders !== undefined ? stats.orders : prev.orders,
+          orders: stats.orders !== undefined ? stats.orders.toString() : prev.orders,
           revenue: stats.revenue || prev.revenue,
-          margin: stats.margin !== undefined ? stats.margin : prev.margin,
-          rating: stats.rating !== undefined ? stats.rating : prev.rating,
-          views: stats.views !== undefined ? stats.views : prev.views,
+          margin: stats.margin !== undefined ? stats.margin.toString() : prev.margin,
+          rating: stats.rating !== undefined ? stats.rating.toString() : prev.rating,
+          views: stats.views !== undefined ? stats.views.toString() : prev.views,
         }));
       }
     }
@@ -161,11 +161,11 @@ export default function VisualIntelligence() {
 
     const formData = new FormData();
     formData.append('dishName', metrics.dishName);
-    formData.append('orders', metrics.orders.toString());
-    formData.append('margin', metrics.margin.toString());
-    formData.append('views', metrics.views.toString());
+    formData.append('orders', (parseInt(metrics.orders) || 0).toString());
+    formData.append('margin', (parseFloat(metrics.margin) || 0).toString());
+    formData.append('views', (parseInt(metrics.views) || 0).toString());
     formData.append('revenue', metrics.revenue);
-    formData.append('rating', metrics.rating.toString());
+    formData.append('rating', (parseFloat(metrics.rating) || 0).toString());
     formData.append('avgOrders', metrics.avgOrders.toString());
     formData.append('avgViews', metrics.avgViews.toString());
     formData.append('image', file);
@@ -256,7 +256,8 @@ export default function VisualIntelligence() {
               <MetricInput 
                 label="Orders Count" 
                 value={metrics.orders} 
-                onChange={(v) => setMetrics({...metrics, orders: parseInt(v)})} 
+                type="text"
+                onChange={(v) => setMetrics({...metrics, orders: v})} 
                 icon={<TrendingUp size={14} />}
               />
               <MetricInput 
@@ -269,19 +270,22 @@ export default function VisualIntelligence() {
               <MetricInput 
                 label="Profit Margin (0-1)" 
                 value={metrics.margin} 
-                onChange={(v) => setMetrics({...metrics, margin: parseFloat(v)})} 
+                type="text"
+                onChange={(v) => setMetrics({...metrics, margin: v})} 
                 icon={<DollarSign size={14} />}
               />
               <MetricInput 
                 label="Guest Rating (0-5)" 
                 value={metrics.rating} 
-                onChange={(v) => setMetrics({...metrics, rating: parseFloat(v)})} 
+                type="text"
+                onChange={(v) => setMetrics({...metrics, rating: v})} 
                 icon={<Star size={14} />}
               />
               <MetricInput 
                 label="Views / Clicks" 
                 value={metrics.views} 
-                onChange={(v) => setMetrics({...metrics, views: parseInt(v)})} 
+                type="text"
+                onChange={(v) => setMetrics({...metrics, views: v})} 
                 icon={<Eye size={14} />}
               />
             </div>
@@ -295,11 +299,11 @@ export default function VisualIntelligence() {
                   
                   const formData = new FormData();
                   formData.append('dishName', metrics.dishName);
-                  formData.append('orders', metrics.orders.toString());
-                  formData.append('margin', metrics.margin.toString());
-                  formData.append('views', metrics.views.toString());
+                  formData.append('orders', (parseInt(metrics.orders) || 0).toString());
+                  formData.append('margin', (parseFloat(metrics.margin) || 0).toString());
+                  formData.append('views', (parseInt(metrics.views) || 0).toString());
                   formData.append('revenue', metrics.revenue);
-                  formData.append('rating', metrics.rating.toString());
+                  formData.append('rating', (parseFloat(metrics.rating) || 0).toString());
                   formData.append('avgOrders', metrics.avgOrders.toString());
                   formData.append('avgViews', metrics.avgViews.toString());
                   if (imageFile) {
@@ -468,7 +472,7 @@ export default function VisualIntelligence() {
   );
 }
 
-function MetricInput({ label, value, onChange, icon, type = "number" }: { label: string, value: any, onChange: (v: string) => void, icon: React.ReactNode, type?: string }) {
+function MetricInput({ label, value, onChange, icon, type = "text" }: { label: string, value: any, onChange: (v: string) => void, icon: React.ReactNode, type?: string }) {
   return (
     <div className="space-y-2">
       <label className="text-[10px] text-slate-400 uppercase font-bold tracking-widest flex items-center gap-2">
@@ -477,7 +481,6 @@ function MetricInput({ label, value, onChange, icon, type = "number" }: { label:
       </label>
       <input 
         type={type} 
-        step={type === "number" ? "0.01" : undefined}
         value={value} 
         onChange={(e) => onChange(e.target.value)}
         className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400/50 focus:border-purple-300 transition-colors"
