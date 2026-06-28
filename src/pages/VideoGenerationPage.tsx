@@ -1,6 +1,7 @@
-import React from 'react';
-import { Video, Cpu, Download, Maximize2 } from 'lucide-react';
+import React, { useState } from 'react';
+import { Video, Cpu, Download, Maximize2, Sparkles } from 'lucide-react';
 import StudioEngine from '../components/EngineDemo';
+import OmniEngineDemo from '../components/OmniEngineDemo';
 
 const capabilities = [
   { icon: <Cpu size={16} />, label: '10xFrame Engine', sub: 'Neural composition' },
@@ -10,6 +11,8 @@ const capabilities = [
 ];
 
 export default function VideoGenerationPage() {
+  const [activeEngine, setActiveEngine] = useState<'10xframe' | 'omni'>('omni');
+
   return (
     <div style={{ background: '#FAFAFA', minHeight: '100%', color: '#1a1a2e' }}>
 
@@ -69,9 +72,63 @@ export default function VideoGenerationPage() {
         </div>
       </div>
 
-      {/* ── Existing module ───────────── */}
-      <div style={{ padding: '32px 24px' }}>
-        <StudioEngine />
+      {/* ── Engine Toggle ───────────── */}
+      <div style={{ padding: '24px 24px 0', display: 'flex', justifyContent: 'center' }}>
+        <div style={{
+          display: 'inline-flex',
+          background: '#E5E7EB',
+          padding: 4,
+          borderRadius: 12,
+          gap: 4
+        }}>
+          <button
+            onClick={() => setActiveEngine('10xframe')}
+            style={{
+              padding: '8px 16px',
+              borderRadius: 8,
+              border: 'none',
+              fontSize: 14,
+              fontWeight: 600,
+              display: 'flex',
+              alignItems: 'center',
+              gap: 8,
+              cursor: 'pointer',
+              background: activeEngine === '10xframe' ? 'white' : 'transparent',
+              color: activeEngine === '10xframe' ? '#7C3AED' : '#6B7280',
+              boxShadow: activeEngine === '10xframe' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none',
+              transition: 'all 0.2s'
+            }}
+          >
+            <Cpu size={16} />
+            10xFrame Engine
+          </button>
+          <button
+            onClick={() => setActiveEngine('omni')}
+            style={{
+              padding: '8px 16px',
+              borderRadius: 8,
+              border: 'none',
+              fontSize: 14,
+              fontWeight: 600,
+              display: 'flex',
+              alignItems: 'center',
+              gap: 8,
+              cursor: 'pointer',
+              background: activeEngine === 'omni' ? 'white' : 'transparent',
+              color: activeEngine === 'omni' ? '#4F46E5' : '#6B7280',
+              boxShadow: activeEngine === 'omni' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none',
+              transition: 'all 0.2s'
+            }}
+          >
+            <Sparkles size={16} />
+            Gemini Omni (Veo)
+          </button>
+        </div>
+      </div>
+
+      {/* ── Active Module ───────────── */}
+      <div style={{ padding: '24px' }}>
+        {activeEngine === '10xframe' ? <StudioEngine /> : <OmniEngineDemo />}
       </div>
     </div>
   );

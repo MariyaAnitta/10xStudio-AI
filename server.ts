@@ -204,6 +204,78 @@ app.post('/api/generate-composition', async (req, res) => {
   }
 });
 
+app.post('/api/generate-omni-video', async (req, res) => {
+  const { prompt } = req.body;
+
+  try {
+    const escapedPrompt = prompt.replace(/"/g, '\\"');
+    const pythonPath = PYTHON_PATH;
+    const scriptPath = path.join(process.cwd(), 'omni_video_generator.py');
+    const outputFilename = `omni_${Date.now()}.mp4`;
+    
+    console.log(`Starting Gemini Omni Video Generation for: ${prompt.substring(0, 50)}...`);
+
+    // We use a longer timeout here because Veo video generation takes a few minutes
+    exec(`${pythonPath} "${scriptPath}" "${escapedPrompt}" "${outputFilename}"`, { timeout: 600000 }, async (error, stdout, stderr) => {
+      if (error) {
+        console.error(`Python Error: ${error.message}`);
+        return res.status(500).json({ error: 'Failed to generate Omni video via Python Bridge' });
+      }
+      
+      try {
+        const lines = stdout.trim().split('\n');
+        let result = null;
+        for (const line of lines.reverse()) {
+          if (line.trim().startsWith('{')) {
+            try {
+              result = JSON.parse(line);
+              break;
+            } catch (e) {}
+          }
+        }
+
+        if (!result || !result.success) {
+          throw new Error(result ? result.error : 'Invalid output from Omni generator');
+        }
+
+        // Upload to Firebase/GCS
+        const localFilePath = path.join(process.cwd(), 'localvideos', result.filename);
+        let publicUrl = '';
+        if (fs.existsSync(localFilePath)) {
+          const destination = `videos/${Date.now()}-${result.filename}`;
+          try {
+            publicUrl = await uploadToFirebaseStorage(localFilePath, destination);
+            
+            // Save video metadata to Firestore
+            await saveToFirestore('videos', {
+              filename: result.filename,
+              publicUrl: publicUrl || `/videos/${result.filename}`,
+              localUrl: `/videos/${result.filename}`,
+              model: 'veo-2.0-generate-001'
+            });
+          } catch (err) {
+            console.error(`Failed to upload Omni MP4 to GCS Storage:`, err);
+          }
+        }
+
+        res.json({
+          success: true,
+          videoUrl: `/videos/${result.filename}`,
+          publicUrl: publicUrl
+        });
+
+      } catch (parseError: any) {
+        console.error("Omni Pipeline Error:", parseError.message);
+        res.status(500).json({ error: parseError.message, raw: stdout });
+      }
+    });
+  } catch (error) {
+    console.error('API Error:', error);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+
 app.post('/api/visual-automation', upload.single('image'), (req, res) => {
   if (!req.file) {
     return res.status(400).json({ error: 'No image file uploaded' });
