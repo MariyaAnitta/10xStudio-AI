@@ -38,9 +38,7 @@ export default function LoginPage() {
           <h2 className="text-white font-extrabold text-3xl tracking-tight leading-tight">
             Creative Intelligence Engine
           </h2>
-          <p className="text-slate-400 mt-2 text-sm max-w-sm mx-auto">
-            World-class marketing automation suite powered by Gemini 2.5 Flash.
-          </p>
+
         </div>
 
         {/* Login Card */}
