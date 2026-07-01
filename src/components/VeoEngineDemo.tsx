@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { motion } from 'motion/react';
 import { Sparkles, Terminal as TerminalIcon, Video, Loader2, Code2, Download, Maximize2 } from 'lucide-react';
 
-export default function OmniEngineDemo() {
+export default function VeoEngineDemo() {
   const [prompt, setPrompt] = useState('Cinematic close-up of a perfectly grilled steak, steam rising, ambient lighting, high quality.');
   const [videoUrl, setVideoUrl] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -14,7 +14,7 @@ export default function OmniEngineDemo() {
     setErrorMsg(null);
     
     try {
-      const response = await fetch('/api/generate-omni-video', {
+      const response = await fetch('/api/generate-veo-video', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ prompt })
@@ -34,7 +34,7 @@ export default function OmniEngineDemo() {
   };
 
   const toggleFullscreen = () => {
-    const videoElem = document.getElementById('omni-video-player');
+    const videoElem = document.getElementById('veo-video-player');
     if (!videoElem) return;
 
     if (!document.fullscreenElement) {
@@ -57,7 +57,7 @@ export default function OmniEngineDemo() {
               <div className="p-2 bg-indigo-50 rounded-lg text-indigo-600">
                 <Sparkles size={20} />
               </div>
-              <h2 className="text-xl font-semibold tracking-tight text-slate-900">GEMINI OMNI (VEO)</h2>
+              <h2 className="text-xl font-semibold tracking-tight text-slate-900">GEMINI VEO</h2>
             </div>
             <div className="text-xs font-mono text-indigo-600 bg-indigo-50 px-2 py-1 rounded">veo-2.0-generate</div>
           </div>
@@ -129,7 +129,7 @@ export default function OmniEngineDemo() {
             {videoUrl ? (
               <>
                 <video 
-                  id="omni-video-player"
+                  id="veo-video-player"
                   src={videoUrl} 
                   className="w-full h-full object-cover" 
                   controls

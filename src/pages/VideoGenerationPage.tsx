@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Video, Cpu, Download, Maximize2, Sparkles } from 'lucide-react';
 import StudioEngine from '../components/EngineDemo';
-import OmniEngineDemo from '../components/OmniEngineDemo';
+import VeoEngineDemo from '../components/VeoEngineDemo';
 
 const capabilities = [
   { icon: <Cpu size={16} />, label: '10xFrame Engine', sub: 'Neural composition' },
@@ -11,7 +11,7 @@ const capabilities = [
 ];
 
 export default function VideoGenerationPage() {
-  const [activeEngine, setActiveEngine] = useState<'10xframe' | 'omni'>('omni');
+  const [activeEngine, setActiveEngine] = useState<'10xframe' | 'veo'>('veo');
 
   return (
     <div style={{ background: '#FAFAFA', minHeight: '100%', color: '#1a1a2e' }}>
@@ -103,7 +103,7 @@ export default function VideoGenerationPage() {
             10xFrame Engine
           </button>
           <button
-            onClick={() => setActiveEngine('omni')}
+            onClick={() => setActiveEngine('veo')}
             style={{
               padding: '8px 16px',
               borderRadius: 8,
@@ -114,21 +114,21 @@ export default function VideoGenerationPage() {
               alignItems: 'center',
               gap: 8,
               cursor: 'pointer',
-              background: activeEngine === 'omni' ? 'white' : 'transparent',
-              color: activeEngine === 'omni' ? '#4F46E5' : '#6B7280',
-              boxShadow: activeEngine === 'omni' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none',
+              background: activeEngine === 'veo' ? 'white' : 'transparent',
+              color: activeEngine === 'veo' ? '#4F46E5' : '#6B7280',
+              boxShadow: activeEngine === 'veo' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none',
               transition: 'all 0.2s'
             }}
           >
             <Sparkles size={16} />
-            Gemini Omni (Veo)
+            Gemini Veo
           </button>
         </div>
       </div>
 
       {/* ── Active Module ───────────── */}
       <div style={{ padding: '24px' }}>
-        {activeEngine === '10xframe' ? <StudioEngine /> : <OmniEngineDemo />}
+        {activeEngine === '10xframe' ? <StudioEngine /> : <VeoEngineDemo />}
       </div>
     </div>
   );
